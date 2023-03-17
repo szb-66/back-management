@@ -1,6 +1,6 @@
 <template>
     <el-menu active-text-color="#ffd04b" background-color="#545c64" class="el-menu-vertical-demo" default-active="1"
-        text-color="#fff" @open="handleOpen" @close="handleClose">
+        text-color="#fff">
         <el-menu-item index="1" @click="toHome">
             <el-icon>
                 <location />
@@ -42,6 +42,7 @@
 
 <script setup>
 import {useRouter} from 'vue-router'
+import {onMounted} from 'vue'
 import {
     Document,
     Menu as IconMenu,
@@ -49,12 +50,7 @@ import {
     Setting,
 } from '@element-plus/icons-vue'
 const router = useRouter()
-const handleOpen = () => {
-    // Handle menu open
-}
-const handleClose = () => {
-    // Handle menu close
-}
+
 const toHome = () => {
     router.push({ name: 'Home' });
 }
@@ -70,6 +66,29 @@ const toProjectExperience = () => {
 const toWorkExperience = () => {
     router.push({ name: 'WorkExperience' });
 }
+// 刷新时，根据当前路由跳转到对应的页面
+onMounted(() => {
+    const currentRoute = router.currentRoute.value.name
+    switch (currentRoute) {
+        case 'Home':
+            toHome()
+            break
+        case 'PublishArticle':
+            toPublishArticle()
+            break
+        case 'ArticleManagement':
+            toArticleManagement()
+            break
+        case 'ProjectExperience':
+            toProjectExperience()
+            break
+        case 'WorkExperience':
+            toWorkExperience()
+            break
+        default:
+            toHome()
+    }
+})
 </script>
 
 <style lang="less" scoped>
