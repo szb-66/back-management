@@ -33,7 +33,7 @@
 
     <!-- 内容 -->
     <el-form-item label="内容" prop="content">
-      <el-input v-model="ruleForm.content" type="textarea" />
+      <el-input v-model="ruleForm.content" type="textarea" :rows="10" />
     </el-form-item>
 
     <!-- 按钮 -->
@@ -48,7 +48,7 @@
 
 <script setup>
 import { computed, nextTick, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useStore } from 'vuex';
 
 const formSize = ref('default')
@@ -66,7 +66,7 @@ let ruleForm = reactive({
 const rules = reactive({
   title: [
     { required: true, message: '请输入文章标题', trigger: 'blur' },
-    { min: 3, max: 20, message: '长度在3~20之间', trigger: 'blur' },
+    { min: 1, max: 20, message: '长度在1~20之间', trigger: 'blur' },
   ],
   type: [
     {
@@ -89,7 +89,7 @@ const submitForm = async (formEl) => {
         message: `提交成功`,
         type: 'success',
       })
-      console.log(ruleForm);
+      // 清除表单字段
       formEl.resetFields()
     } else {
       console.log('error submit!', fields)
@@ -181,4 +181,37 @@ ruleForm = computed({
 
 </script>
 
-<style lang = "less" scoped></style>
+<style lang = "less" scoped>
+.upload-demo {
+  display: inline-block;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.upload-demo-file {
+  font-size: 12px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.upload-demo-file-name {
+  display: inline-block;
+  width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upload-demo-file-status {
+  display: inline-block;
+  margin-left: 20px;
+  font-size: 14px;
+}
+
+.upload-demo-file-actions {
+  display: inline-block;
+  margin-left: 20px;
+  font-size: 14px;
+  color: #666;
+}
+</style>
