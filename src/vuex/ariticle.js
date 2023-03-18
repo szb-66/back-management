@@ -5,7 +5,7 @@ const store = createStore({
         return {
             ruleForm: {
                 title: '',
-                type: '',
+                type: '未分类',
                 content: '',
                 tags: [],
             }

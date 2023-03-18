@@ -10,14 +10,13 @@
     <!-- 类型 -->
     <el-form-item label="类型" prop="type">
       <el-select v-model="ruleForm.type" placeholder="请选择">
-        <el-option label="设计" value="设计" />
-        <el-option label="开发" value="开发" />
+        <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
       </el-select>
     </el-form-item>
 
     <!-- 标签，隐藏输入框来传值 -->
     <el-form-item label="标签" prop="tags">
-      <!-- 按钮 -->
+      <!-- 输入框 -->
       <el-input v-model="ruleForm.tags" type="hidden" />
       <!-- 标签 -->
       <el-tag v-for="tag in ruleForm.tags" :key="tag" class="mx-1" closable :disable-transitions="false"
@@ -54,10 +53,26 @@ import { useStore } from 'vuex';
 const formSize = ref('default')
 const ruleFormRef = ref()
 
+// 类型选项
+const options = [
+  {
+    value: '未分类',
+    label: '未分类',
+  },
+  {
+    value: '设计',
+    label: '设计',
+  },
+  {
+    value: '开发',
+    label: '开发',
+  },
+]
+
 // 表单各项的值
 let ruleForm = reactive({
   title: '',
-  type: '',
+  type: '未分类',
   content: '',
   tags: [],
 })
@@ -85,12 +100,20 @@ const submitForm = async (formEl) => {
   if (!formEl) return
   await formEl.validate((valid, fields) => {
     if (valid) {
+      console.log(ruleForm.value);
       ElMessage({
         message: `提交成功`,
         type: 'success',
       })
       // 清除表单字段
       formEl.resetFields()
+      // 清除 Vuex 中保存的内容
+      store.commit('updateRuleForm', {
+        title: '',
+        type: '未分类',
+        content: '',
+        tags: [],
+      });
     } else {
       console.log('error submit!', fields)
     }
@@ -119,7 +142,7 @@ const resetForm = (formEl) => {
       // 清除 Vuex 中保存的内容
       store.commit('updateRuleForm', {
         title: '',
-        type: '',
+        type: '未分类',
         content: '',
         tags: [],
       });
@@ -132,10 +155,10 @@ const resetForm = (formEl) => {
     })
 }
 
-const options = Array.from({ length: 10000 }).map((_, idx) => ({
+/* const options = Array.from({ length: 10000 }).map((_, idx) => ({
   value: `${idx + 1}`,
   label: `${idx + 1}`,
-}))
+})) */
 
 // 标签功能
 const inputValue = ref('')
@@ -143,7 +166,7 @@ const inputVisible = ref(false)
 const InputRef = ref()
 
 const handleClose = (tag) => {
-  ruleForm.tags.splice(ruleForm.tags.indexOf(tag), 1)
+  ruleForm.value.tags.splice(ruleForm.value.tags.indexOf(tag), 1)
 }
 
 const showInput = () => {
