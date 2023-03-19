@@ -8,6 +8,7 @@ const store = createStore({
                 type: '未分类',
                 content: '',
                 tags: [],
+                created_at:''
             }
         };
     },

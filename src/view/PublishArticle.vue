@@ -31,8 +31,8 @@
     </el-form-item>
 
     <!-- 内容 -->
-    <el-form-item label="内容" prop="content">
-      <el-input v-model="ruleForm.content" type="textarea" :rows="10" />
+    <el-form-item label="内容" prop="content" label-width="auto" class="custom-form-item222">
+      <vue3-tinymce v-model="ruleForm.content" :setting="state.setting" />
     </el-form-item>
 
     <!-- 按钮 -->
@@ -46,9 +46,13 @@
 </template>
 
 <script setup>
-import { computed, nextTick, reactive, ref } from 'vue'
+import { computed, nextTick, reactive, ref, watchEffect } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useStore } from 'vuex';
+import axios from 'axios';
+// 详细地址 https://juejin.cn/post/7012073370023886856
+import Vue3Tinymce from '@jsdawn/vue3-tinymce';
+
 
 const formSize = ref('default')
 const ruleFormRef = ref()
@@ -73,9 +77,22 @@ const options = [
 let ruleForm = reactive({
   title: '',
   type: '未分类',
-  content: '',
   tags: [],
+  content: '',
+  created_at: ''
 })
+
+// 设置富文本编辑器
+const state = reactive({
+  // editor 配置项
+  setting: {
+    // height: 400, 
+    // width: 800, 
+    language: 'zh-Hans',
+    language_url: 'https://unpkg.com/@jsdawn/vue3-tinymce@2.0.2/dist/tinymce/langs/zh-Hans.js',
+  },
+});
+
 
 // 检测规则
 const rules = reactive({
@@ -98,22 +115,35 @@ const rules = reactive({
 // 上传新文章
 const submitForm = async (formEl) => {
   if (!formEl) return
-  await formEl.validate((valid, fields) => {
+  await formEl.validate(async (valid, fields) => {
     if (valid) {
-      console.log(ruleForm.value);
-      ElMessage({
-        message: `提交成功`,
-        type: 'success',
-      })
-      // 清除表单字段
-      formEl.resetFields()
-      // 清除 Vuex 中保存的内容
-      store.commit('updateRuleForm', {
-        title: '',
-        type: '未分类',
-        content: '',
-        tags: [],
-      });
+      // 获取当前时间
+      const createdAt = new Date().toLocaleString();
+      // 将当前时间添加到 ruleForm.value 对象的 created_at 属性中
+      ruleForm.value.created_at = createdAt;
+      try {
+        await axios.post('http://localhost:3000/articles', ruleForm.value);
+        ElMessage({
+          message: `提交成功`,
+          type: 'success',
+        })
+        // 清除表单字段
+        formEl.resetFields()
+        // 清除 Vuex 中保存的内容
+        store.commit('updateRuleForm', {
+          title: '',
+          type: '未分类',
+          content: '',
+          tags: [],
+          created_at: ''
+        });
+      } catch (error) {
+        console.error('提交失败', error);
+        ElMessage({
+          message: `提交失败`,
+          type: 'error',
+        });
+      }
     } else {
       console.log('error submit!', fields)
     }
@@ -145,6 +175,7 @@ const resetForm = (formEl) => {
         type: '未分类',
         content: '',
         tags: [],
+        created_at: ''
       });
     })
     .catch(() => {
@@ -177,7 +208,6 @@ const showInput = () => {
     }
   });
 };
-
 const handleInputConfirm = () => {
   if (inputValue.value) {
     // 创建一个新数组副本
@@ -204,37 +234,13 @@ ruleForm = computed({
 
 </script>
 
+
+
+
 <style lang = "less" scoped>
-.upload-demo {
-  display: inline-block;
-  margin-top: 20px;
-  width: 100%;
+.custom-form-item222 :deep(.el-form-item__content) {
+  // 强制添加属性
+  display: block !important;
 }
 
-.upload-demo-file {
-  font-size: 12px;
-  margin-top: 10px;
-  width: 100%;
-}
-
-.upload-demo-file-name {
-  display: inline-block;
-  width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.upload-demo-file-status {
-  display: inline-block;
-  margin-left: 20px;
-  font-size: 14px;
-}
-
-.upload-demo-file-actions {
-  display: inline-block;
-  margin-left: 20px;
-  font-size: 14px;
-  color: #666;
-}
 </style>

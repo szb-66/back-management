@@ -11,9 +11,9 @@
           <el-tag v-for="(item, index) in row.tags" :key="index">{{ item }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="publishTime" label="发布时间" width="180" sortable>
+      <el-table-column prop="created_at" label="发布时间" width="180" sortable>
       </el-table-column>
-      <el-table-column prop="updateTime" label="更新时间" width="180" sortable>
+      <el-table-column prop="updated_at" label="更新时间" width="180" sortable>
       </el-table-column>
       <el-table-column label="编辑">
         <!-- 按钮 -->
@@ -26,15 +26,18 @@
     <!-- 对话框弹窗 -->
     <el-dialog v-model="dialogVisible" title="编辑文章" :append-to-body="true" :show-close="false">
       <el-form :model="data">
+        <!-- 文章标题 -->
         <el-form-item label="标题">
           <el-input v-model="data.title"></el-input>
         </el-form-item>
+        <!-- 类型 -->
         <el-form-item label="类型">
           <!-- 选择器 -->
           <el-select v-model="data.type" class="m-2" placeholder="Select">
             <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
+        <!-- 标签 -->
         <el-form-item label="标签">
           <el-input v-model="data.tags" type="hidden"></el-input>
           <!-- 标签 -->
@@ -48,10 +51,13 @@
             + New Tag
           </el-button>
         </el-form-item>
-        <el-form-item label="内容">
-          <el-input v-model="data.content"></el-input>
+        <!-- 内容 -->
+        <el-form-item label="内容" class="custom-form-item222">
+          <!-- <el-input v-model="data.content"></el-input> -->
+          <vue3-tinymce v-model="data.content" :setting="state.setting" />
         </el-form-item>
       </el-form>
+      <!-- 对话框底部 -->
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="dialogVisible = false">取 消</el-button>
@@ -63,47 +69,36 @@
 </template>
 
 <script setup>
-import { reactive, ref, nextTick } from 'vue'
+import { reactive, ref, nextTick,onMounted,toRef  } from 'vue'
+import axios from 'axios';
+import Vue3Tinymce from '@jsdawn/vue3-tinymce';
+
+// 设置富文本编辑器
+const state = reactive({
+  // editor 配置项
+  setting: {
+    // height: 400, 
+    // width: 800, 
+    language: 'zh-Hans',
+    language_url: 'https://unpkg.com/@jsdawn/vue3-tinymce@2.0.2/dist/tinymce/langs/zh-Hans.js',
+  },
+});
 
 // 表格数据
-const tableDatas = ref([
-  {
-    id: '',
-    title: '文章标题1',
-    type: '设计',
-    tags: ['标签1', '标签2'],
-    content: '文章内容1',
-    publishTime: '2022-01-01',
-    updateTime: '2022-01-01'
-  },
-  {
-    id: '',
-    title: '文章标题2',
-    type: '设计',
-    tags: ['标签2'],
-    content: '文章内容2',
-    publishTime: '2022-01-02',
-    updateTime: '2022-01-02'
-  },
-  {
-    id: '',
-    title: '文章标题3',
-    type: '开发',
-    tags: ['标签3'],
-    content: '文章内容3',
-    publishTime: '2022-01-03',
-    updateTime: '2022-01-03'
-  },
-  {
-    id: '',
-    title: '文章标题4',
-    type: '开发',
-    tags: ['标签4'],
-    content: '文章内容4',
-    publishTime: '2022-01-04',
-    updateTime: '2022-01-04'
+const tableDatas = ref([])
+
+async function fetchArticles() {
+  try {
+    const response = await axios.get('http://localhost:3000/articles');
+    tableDatas.value = response.data;
+  } catch (error) {
+    console.error('获取文章列表失败：', error);
   }
-])
+}
+
+onMounted(() => {
+  fetchArticles();
+});
 
 // 类型选项
 const options = [
@@ -121,6 +116,18 @@ const options = [
   },
 ]
 
+// 删除按钮
+const deleteRow = async (row) => {
+  try {
+    await axios.delete(`http://localhost:3000/articles/${row.id}`);
+    tableDatas.value.splice(tableDatas.value.indexOf(row), 1);
+    ElMessage.success('文章已成功删除');
+  } catch (error) {
+    console.error('删除文章失败：', error);
+    ElMessage.error('删除文章失败');
+  }
+};
+
 // 对话框显示状态
 const dialogVisible = ref(false)
 
@@ -131,8 +138,8 @@ const data = reactive({
   type: '',
   tags: [],
   content: '',
-  publishTime: '',
-  updateTime: ''
+  created_at: '',
+  updated_at: ''
 })
 
 // 点击的对话框id
@@ -145,30 +152,51 @@ const editRow = (row) => {
   data.type = row.type
   data.tags = row.tags.slice()
   data.content = row.content
-  data.publishTime = row.publishTime
-  data.updateTime = row.updateTime
+  data.created_at = row.created_at
+  data.updated_at = row.updated_at
 
   dialogId.value = tableDatas.value.indexOf(row)
   dialogVisible.value = true
 }
 
-// 删除按钮
-const deleteRow = (row) => {
-  tableDatas.value.splice(tableDatas.value.indexOf(row), 1)
-}
+// 弹窗中的确定
+const confirmEdit = async (dialogId) => {
+  // 获取需要更新的文章数据
+  const updatedArticle = {
+    id: tableDatas.value[dialogId].id,
+    title: data.title,
+    type: data.type,
+    tags: data.tags,
+    content: data.content,
+    created_at: tableDatas.value[dialogId].created_at,
+  };
+  // 检查新旧数据是否相同
+  const isDataUnchanged =
+    tableDatas.value[dialogId].title === updatedArticle.title &&
+    tableDatas.value[dialogId].type === updatedArticle.type &&
+    JSON.stringify(tableDatas.value[dialogId].tags) === JSON.stringify(updatedArticle.tags) &&
+    tableDatas.value[dialogId].content === updatedArticle.content;
+  // 如果数据未发生更改，则直接关闭弹窗并返回
+  if (isDataUnchanged) {
+    dialogVisible.value = false;
+    dialogId = '';
+    return;
+  }
+  // 发送更新请求
+  try {
+    const response = await axios.put(`http://localhost:3000/articles/${updatedArticle.id}`, updatedArticle);
+    // 本地更新客户端表格数据
+    tableDatas.value[dialogId] = { ...updatedArticle, updated_at: response.data.updated_at };
+    ElMessage.success('文章已成功更新');
+  } catch (error) {
+    console.error('更新文章失败：', error);
+    ElMessage.error('更新文章失败');
+  }
+  dialogVisible.value = false;
+  dialogId = '';
+};
 
-// 弹窗点击确定
-const confirmEdit = (dialogId) => {
-  tableDatas.value[dialogId].title = data.title
-  tableDatas.value[dialogId].type = data.type
-  tableDatas.value[dialogId].tags = data.tags
-  tableDatas.value[dialogId].content = data.content
-
-  dialogVisible.value = false
-  dialogId = ''
-}
-
-// 标签功能
+// 对话框中的标签编辑功能
 const inputValue = ref('') // 输入框的值
 const inputVisible = ref(false) // 输入框的显示状态
 const InputRef = ref() // 输入框的ref
@@ -201,5 +229,10 @@ const handleInputConfirm = () => {
 <style lang="less" scoped>
 .dialog-footer button:first-child {
   margin-right: 10px;
+}
+
+.custom-form-item222 :deep(.el-form-item__content) {
+  // 强制添加属性
+  display: block !important;
 }
 </style>
