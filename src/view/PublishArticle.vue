@@ -7,6 +7,15 @@
       <el-input v-model="ruleForm.title" />
     </el-form-item>
 
+    <!-- 封面 -->
+    <el-upload ref="uploadRef" class="upload-demo" action="http://localhost:3000/upload" :limit="1"
+      :on-exceed="handleExceed" :before-upload="beforeUpload" :on-success="handleSuccess" :file-list="uploadedFiles">
+      <el-button type="primary">点击上传图片</el-button>
+      <template #tip>
+        <div class="el-upload__tip">jpg/png files with a size less than 500KB.</div>
+      </template>
+    </el-upload>
+
     <!-- 类型 -->
     <el-form-item label="类型" prop="type">
       <el-select v-model="ruleForm.type" placeholder="请选择">
@@ -37,9 +46,7 @@
 
     <!-- 按钮 -->
     <el-form-item>
-      <el-button type="primary" @click="submitForm(ruleFormRef)">
-        提交
-      </el-button>
+      <el-button type="primary" @click="submitForm(ruleFormRef)">提交</el-button>
       <el-button @click="resetForm(ruleFormRef)">清除</el-button>
     </el-form-item>
   </el-form>
@@ -55,7 +62,10 @@ import Vue3Tinymce from '@jsdawn/vue3-tinymce';
 
 
 const formSize = ref('default')
+// 表单的ref实例
 const ruleFormRef = ref()
+// 上传封面的ref实例
+const uploadRef = ref(null);
 
 // 类型选项
 const options = [
@@ -79,8 +89,39 @@ let ruleForm = reactive({
   type: '未分类',
   tags: [],
   content: '',
-  created_at: ''
+  imgUrl: '',
 })
+
+// 上传封面相关函数
+const uploadedFiles = ref([]);
+// 处理上传图片后服务器返回的图片url地址
+const handleSuccess = (response, file) => {
+  // ruleForm.imgUrl = response.url
+  store.commit('updateRuleForm', {
+        imgUrl: response.url,
+      });
+      // console.log('ruleForm', ruleForm);
+}
+const handleExceed = (files, uploadFiles) => {
+  ElMessage.warning(
+    `限制数量为1`
+  )
+}
+function beforeUpload(file) {
+  const isJPG = file.type === 'image/jpeg';
+  const isPNG = file.type === 'image/png';
+  const isLt500KB = file.size / 1024 < 500;
+  if (!isJPG && !isPNG) {
+    this.$message.error('上传图片只能是 JPG/PNG 格式!');
+    return false;
+  }
+  if (!isLt500KB) {
+    this.$message.error('上传图片大小不能超过 500KB!');
+    return false;
+  }
+  return true;
+}
+
 
 // 设置富文本编辑器
 const state = reactive({
@@ -101,11 +142,7 @@ const rules = reactive({
     { min: 1, max: 20, message: '长度在1~20之间', trigger: 'blur' },
   ],
   type: [
-    {
-      required: true,
-      message: '请选择文章类型',
-      trigger: 'change',
-    },
+    { required: true, message: '请选择文章类型', trigger: 'change', },
   ],
   content: [
     { required: true, message: '内容不能为空', trigger: 'blur' },
@@ -114,13 +151,10 @@ const rules = reactive({
 
 // 上传新文章
 const submitForm = async (formEl) => {
+  console.log();
   if (!formEl) return
   await formEl.validate(async (valid, fields) => {
     if (valid) {
-      // 获取当前时间
-      const createdAt = new Date().toLocaleString();
-      // 将当前时间添加到 ruleForm.value 对象的 created_at 属性中
-      ruleForm.value.created_at = createdAt;
       try {
         await axios.post('http://localhost:3000/articles', ruleForm.value);
         ElMessage({
@@ -135,8 +169,12 @@ const submitForm = async (formEl) => {
           type: '未分类',
           content: '',
           tags: [],
-          created_at: ''
+          imgUrl: '',
         });
+        // 清除上传的文件
+        if (uploadRef.value) {
+          uploadRef.value.clearFiles();
+        }
       } catch (error) {
         console.error('提交失败', error);
         ElMessage({
@@ -175,8 +213,12 @@ const resetForm = (formEl) => {
         type: '未分类',
         content: '',
         tags: [],
-        created_at: ''
+        imgUrl: '',
       });
+      // 清除上传的文件
+      if (uploadRef.value) {
+        uploadRef.value.clearFiles();
+      }
     })
     .catch(() => {
       ElMessage({
@@ -185,11 +227,6 @@ const resetForm = (formEl) => {
       })
     })
 }
-
-/* const options = Array.from({ length: 10000 }).map((_, idx) => ({
-  value: `${idx + 1}`,
-  label: `${idx + 1}`,
-})) */
 
 // 标签功能
 const inputValue = ref('')
@@ -232,6 +269,7 @@ ruleForm = computed({
   set: (value) => store.commit('updateRuleForm', value)  //ps:这里会把vuex中的对象赋值给ruleForm，两个对象指向同一个内存地址，所以修改ruleForm会直接修改vuex中的对象，所以push不可用
 });
 
+
 </script>
 
 
@@ -242,5 +280,10 @@ ruleForm = computed({
   // 强制添加属性
   display: block !important;
 }
+
+</style>
+
+
+<style>
 
 </style>

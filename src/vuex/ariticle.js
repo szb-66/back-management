@@ -8,13 +8,14 @@ const store = createStore({
                 type: '未分类',
                 content: '',
                 tags: [],
-                created_at:''
+                imgUrl:''
             }
         };
     },
     mutations: {
         updateRuleForm(state, payload) {
-            state.ruleForm = payload;
+            // state.ruleForm = payload;
+            state.ruleForm = Object.assign({}, state.ruleForm, payload);
         }
     }
 });

@@ -2,6 +2,11 @@
   <div>
     <!-- 表格 -->
     <el-table :data="tableDatas" style="width: 100%">
+      <el-table-column prop="url" label="封面" width="180">
+        <template #default="{ row }">
+          <img style="width: 100px; height: 100px" :src="row.imgUrl"><img>
+        </template>
+      </el-table-column>
       <el-table-column prop="title" label="标题" width="180">
       </el-table-column>
       <el-table-column prop="type" label="类型" width="180">
