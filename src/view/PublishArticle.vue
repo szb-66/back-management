@@ -228,6 +228,7 @@ function beforeUpload(file) {
         return false;
     }
     return true;
+    
 }
 // 移除图片，服务器同步
 function removeImg(file, fileList){

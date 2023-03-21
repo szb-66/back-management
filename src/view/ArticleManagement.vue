@@ -23,8 +23,8 @@
       <el-table-column label="编辑">
         <!-- 按钮 -->
         <template #default="{ row }">
-          <el-button @click="editRow(row)" type="primary">编辑</el-button>
-          <el-button @click="deleteRow(row)" type="danger">删除</el-button>
+          <el-button @click="editRow(row)" size="small" type="primary">编辑</el-button>
+          <el-button @click="deleteRow(row)" size="small" type="danger">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -92,7 +92,7 @@ import axios from 'axios';
 import Vue3Tinymce from '@jsdawn/vue3-tinymce';
 
 const ch = () =>{
-  uploadedFiles.value = (data.imgUrl)
+  tableDatas.value
 }
 
 
