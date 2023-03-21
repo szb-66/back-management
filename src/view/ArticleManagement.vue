@@ -4,7 +4,7 @@
     <el-table :data="tableDatas" style="width: 100%">
       <el-table-column prop="url" label="封面" width="180">
         <template #default="{ row }">
-          <img style="width: 100px; height: 100px" :src="row.imgUrl"><img>
+          <img style="width: 178px; height: 100px" :src="row.imgUrl"><img>
         </template>
       </el-table-column>
       <el-table-column prop="title" label="标题" width="180">
@@ -23,17 +23,29 @@
       <el-table-column label="编辑">
         <!-- 按钮 -->
         <template #default="{ row }">
-          <el-button @click="editRow(row)" size="small">编辑</el-button>
-          <el-button @click="deleteRow(row)" size="small">删除</el-button>
+          <el-button @click="editRow(row)" type="primary">编辑</el-button>
+          <el-button @click="deleteRow(row)" type="danger">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
+
+
     <!-- 对话框弹窗 -->
     <el-dialog v-model="dialogVisible" title="编辑文章" :append-to-body="true" :show-close="false">
       <el-form :model="data">
         <!-- 文章标题 -->
         <el-form-item label="标题">
           <el-input v-model="data.title"></el-input>
+        </el-form-item>
+        <!-- 封面 -->
+        <el-form-item label="封面">
+          <el-upload ref="uploadRef" class="upload-demo" action="http://localhost:3000/images" :limit="1" list-type="picture-card"
+              :on-exceed="handleExceed" :before-upload="beforeUpload" :on-success="handleSuccess" :file-list="uploadedFiles" :on-remove="removeImg">
+              <template #tip>
+                  <div class="el-upload__tip">jpg/png files with a size less than 500KB.</div>
+              </template>
+              <el-icon><Plus /></el-icon>
+          </el-upload>
         </el-form-item>
         <!-- 类型 -->
         <el-form-item label="类型">
@@ -65,6 +77,7 @@
       <!-- 对话框底部 -->
       <template #footer>
         <span class="dialog-footer">
+          <el-button @click="ch()">ch</el-button>
           <el-button @click="dialogVisible = false">取 消</el-button>
           <el-button type="primary" @click="confirmEdit(dialogId)">确 定</el-button>
         </span>
@@ -78,6 +91,26 @@ import { reactive, ref, nextTick,onMounted,toRef  } from 'vue'
 import axios from 'axios';
 import Vue3Tinymce from '@jsdawn/vue3-tinymce';
 
+const ch = () =>{
+  uploadedFiles.value = (data.imgUrl)
+}
+
+
+onMounted(() => {
+  fetchArticles();
+});
+
+// 表格数据
+const tableDatas = ref([])
+async function fetchArticles() {
+  try {
+    const response = await axios.get('http://localhost:3000/articles');
+    tableDatas.value = response.data;
+  } catch (error) {
+    console.error('获取文章列表失败：', error);
+  }
+}
+
 // 设置富文本编辑器
 const state = reactive({
   // editor 配置项
@@ -89,21 +122,43 @@ const state = reactive({
   },
 });
 
-// 表格数据
-const tableDatas = ref([])
+// 封面
+const uploadedFiles = ref([])
+// 上传封面的ref实例
+const uploadRef = ref(null);
+// 上传成功函数
+const handleSuccess = (response, file) => {
+    console.log(response.url);
+    data.imgUrl = response.url;
 
-async function fetchArticles() {
-  try {
-    const response = await axios.get('http://localhost:3000/articles');
-    tableDatas.value = response.data;
-  } catch (error) {
-    console.error('获取文章列表失败：', error);
-  }
+}
+// 上传失败函数
+const handleExceed = (files, uploadFiles) => {
+    ElMessage.warning(
+        `限制数量为1`
+    )
+}
+// 上传前的校验
+function beforeUpload(file) {
+    const isJPG = file.type === 'image/jpeg';
+    const isPNG = file.type === 'image/png';
+    const isLt500KB = file.size / 1024 < 500;
+    if (!isJPG && !isPNG) {
+        this.$message.error('上传图片只能是 JPG/PNG 格式!');
+        return false;
+    }
+    if (!isLt500KB) {
+        this.$message.error('上传图片大小不能超过 500KB!');
+        return false;
+    }
+    return true;
+}
+// 移除图片，服务器同步
+function removeImg(file, fileList){
+    axios.delete(data.imgUrl);
 }
 
-onMounted(() => {
-  fetchArticles();
-});
+
 
 // 类型选项
 const options = [
@@ -144,7 +199,8 @@ const data = reactive({
   tags: [],
   content: '',
   created_at: '',
-  updated_at: ''
+  updated_at: '',
+  imgUrl: ''
 })
 
 // 点击的对话框id
@@ -159,6 +215,7 @@ const editRow = (row) => {
   data.content = row.content
   data.created_at = row.created_at
   data.updated_at = row.updated_at
+  // uploadedFiles.value.push (row.imgUrl)
 
   dialogId.value = tableDatas.value.indexOf(row)
   dialogVisible.value = true
