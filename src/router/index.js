@@ -35,6 +35,12 @@ const routes = [
     name: 'WorkExperience',
     component: () => import('../view/WorkExperience.vue') 
   },
+  { 
+    path: '/Setting', 
+    name: 'Setting',
+    component: () => import('../view/Setting.vue') 
+  },
+
 ]
 
 const router = createRouter({

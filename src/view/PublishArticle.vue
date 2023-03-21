@@ -19,7 +19,7 @@
         <!-- 类型 -->
         <el-form-item label="类型" prop="type">
             <el-select v-model="ruleForm.type" placeholder="请选择">
-                <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
+                <el-option v-for="item in options" :key="item" :label="item" :value="item" />
             </el-select>
         </el-form-item>
 
@@ -53,7 +53,7 @@
 </template>
   
 <script setup>
-import { computed, nextTick, reactive, ref, watchEffect } from 'vue'
+import { computed, nextTick, reactive, ref, watchEffect, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import axios from 'axios';
 // 详细地址 https://juejin.cn/post/7012073370023886856
@@ -65,18 +65,22 @@ const formSize = ref('default')
 const ruleFormRef = ref()
 // 上传封面的ref实例
 const uploadRef = ref(null);
+
+
 // 类型选项
-const options = [
-    {
-        value: '未分类', label: '未分类',
-    },
-    {
-        value: '设计', label: '设计',
-    },
-    {
-        value: '开发', label: '开发',
-    },
-]
+const options = ref(null)
+onMounted(() => {
+    fetchArticles(options);
+});
+// 沟通服务器获取数据,并将数据赋值给form
+async function fetchArticles(form) {
+    try {
+        const response = await axios.get('http://localhost:3000/types');
+        form.value = response.data.map(tag => tag.type);
+    } catch (error) {
+        console.error('获取文章列表失败：', error);
+    }
+}
 
 // 表单各项的值
 let ruleForm = reactive({

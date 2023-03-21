@@ -51,7 +51,7 @@
         <el-form-item label="类型">
           <!-- 选择器 -->
           <el-select v-model="data.type" class="m-2" placeholder="Select">
-            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
+            <el-option v-for="item in options" :key="item" :label="item" :value="item" />
           </el-select>
         </el-form-item>
         <!-- 标签 -->
@@ -77,7 +77,6 @@
       <!-- 对话框底部 -->
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="ch()">ch</el-button>
           <el-button @click="dialogVisible = false">取 消</el-button>
           <el-button type="primary" @click="confirmEdit(dialogId)">确 定</el-button>
         </span>
@@ -91,16 +90,23 @@ import { reactive, ref, nextTick,onMounted,toRef  } from 'vue'
 import axios from 'axios';
 import Vue3Tinymce from '@jsdawn/vue3-tinymce';
 
-const ch = () =>{
-  tableDatas.value
-}
-
 
 onMounted(() => {
   fetchArticles();
+  fetchArticles2(options);
 });
-
-// 表格数据
+// 类型选项
+const options = ref(null)
+// 沟通服务器获取数据,并将数据赋值给form
+async function fetchArticles2(form) {
+    try {
+        const response = await axios.get('http://localhost:3000/types');
+        form.value = response.data.map(tag => tag.type);
+    } catch (error) {
+        console.error('获取文章列表失败：', error);
+    }
+}
+// 获取表格数据
 const tableDatas = ref([])
 async function fetchArticles() {
   try {
@@ -128,7 +134,6 @@ const uploadedFiles = ref([])
 const uploadRef = ref(null);
 // 上传成功函数
 const handleSuccess = (response, file) => {
-    console.log(response.url);
     data.imgUrl = response.url;
 
 }
@@ -158,23 +163,6 @@ function removeImg(file, fileList){
     axios.delete(data.imgUrl);
 }
 
-
-
-// 类型选项
-const options = [
-  {
-    value: '未分类',
-    label: '未分类',
-  },
-  {
-    value: '设计',
-    label: '设计',
-  },
-  {
-    value: '开发',
-    label: '开发',
-  },
-]
 
 // 删除按钮
 const deleteRow = async (row) => {
@@ -215,7 +203,7 @@ const editRow = (row) => {
   data.content = row.content
   data.created_at = row.created_at
   data.updated_at = row.updated_at
-  // uploadedFiles.value.push (row.imgUrl)
+  data.imgUrl = row.imgUrl
 
   dialogId.value = tableDatas.value.indexOf(row)
   dialogVisible.value = true
@@ -231,19 +219,22 @@ const confirmEdit = async (dialogId) => {
     tags: data.tags,
     content: data.content,
     created_at: tableDatas.value[dialogId].created_at,
+    imgUrl: data.imgUrl
   };
   // 检查新旧数据是否相同
   const isDataUnchanged =
     tableDatas.value[dialogId].title === updatedArticle.title &&
     tableDatas.value[dialogId].type === updatedArticle.type &&
     JSON.stringify(tableDatas.value[dialogId].tags) === JSON.stringify(updatedArticle.tags) &&
-    tableDatas.value[dialogId].content === updatedArticle.content;
+    tableDatas.value[dialogId].content === updatedArticle.content &&
+    tableDatas.value[dialogId].imgUrl === updatedArticle.imgUrl;
   // 如果数据未发生更改，则直接关闭弹窗并返回
   if (isDataUnchanged) {
     dialogVisible.value = false;
     dialogId = '';
     return;
   }
+
   // 发送更新请求
   try {
     const response = await axios.put(`http://localhost:3000/articles/${updatedArticle.id}`, updatedArticle);
