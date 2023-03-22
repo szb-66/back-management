@@ -36,21 +36,6 @@ import axios from 'axios'
 const username = ref('')
 const password = ref('')
 
-// 对输入的用户名和密码进行格式验证
-const validate = () => {
-    const usernamePattern = /^[a-zA-Z0-9_-]{4,16}$/
-    const passwordPattern = /^[a-zA-Z0-9_!@#$%^&*()\-+=<>?{}[\]\\/]{4,20}$/
-    if (!usernamePattern.test(username.value)) {
-        alert('用户名只能包含字母、数字、下划线和破折号，长度为4-16个字符')
-        return false
-    }
-    if (!passwordPattern.test(password.value)) {
-        alert('密码只能包含字母、数字和一些特殊字符，长度为4-20个字符')
-        return false
-    }
-    return true
-}
-
 // 定义自定义事件
 const emits = defineEmits(['login-success']);
 

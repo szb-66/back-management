@@ -39,6 +39,8 @@ onMounted(() => {
       localStorage.removeItem('loginStatus');
       localStorage.removeItem('loginTimestamp');
     }
+  } else {
+    showLogin.value = false;
   }
 });
 

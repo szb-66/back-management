@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- 表格 -->
-    <el-table :data="tableDatas" style="width: 100%">
+    <el-table :data="paginatedTableDatas" style="width: 100%">
       <el-table-column prop="url" label="封面" width="180">
         <template #default="{ row }">
           <img style="width: 178px; height: 100px" :src="row.imgUrl"><img>
@@ -28,7 +28,20 @@
         </template>
       </el-table-column>
     </el-table>
-
+    <!-- 分页器 -->
+    <div class="example-pagination-block">
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page.sync="currentPage"
+        :page-size.sync="pageSize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :page-sizes="[5]"
+        :total="tableDatas.length"
+        background
+        >
+      </el-pagination>
+    </div>
 
     <!-- 对话框弹窗 -->
     <el-dialog v-model="dialogVisible" title="编辑文章" :append-to-body="true" :show-close="false">
@@ -39,12 +52,15 @@
         </el-form-item>
         <!-- 封面 -->
         <el-form-item label="封面">
-          <el-upload ref="uploadRef" class="upload-demo" action="http://localhost:3000/api/images" :limit="1" list-type="picture-card"
-              :on-exceed="handleExceed" :before-upload="beforeUpload" :on-success="handleSuccess" :file-list="uploadedFiles" :on-remove="removeImg">
-              <template #tip>
-                  <div class="el-upload__tip">jpg/png files with a size less than 500KB.</div>
-              </template>
-              <el-icon><Plus /></el-icon>
+          <el-upload ref="uploadRef" class="upload-demo" action="http://localhost:3000/api/images" :limit="1"
+            list-type="picture-card" :on-exceed="handleExceed" :before-upload="beforeUpload" :on-success="handleSuccess"
+            :file-list="uploadedFiles" :on-remove="removeImg">
+            <template #tip>
+              <div class="el-upload__tip">jpg/png files with a size less than 500KB.</div>
+            </template>
+            <el-icon>
+              <Plus />
+            </el-icon>
           </el-upload>
         </el-form-item>
         <!-- 类型 -->
@@ -86,10 +102,31 @@
 </template>
 
 <script setup>
-import { reactive, ref, nextTick,onMounted,toRef  } from 'vue'
+import { reactive, ref, nextTick, onMounted, toRef } from 'vue'
 import axios from 'axios';
 import Vue3Tinymce from '@jsdawn/vue3-tinymce';
 
+// 分页后的数据
+const paginatedTableDatas = ref([])
+const currentPage = ref(1)
+const pageSize = ref(6)
+
+// 处理分页数据
+function paginateTableDatas() {
+  const start = (currentPage.value - 1) * pageSize.value;
+  const end = start + pageSize.value;
+  paginatedTableDatas.value = tableDatas.value.slice(start, end);
+}
+
+function handleSizeChange(val) {
+  console.log(`每页 ${val} 条`)
+}
+
+function handleCurrentChange(val) {
+  console.log(`当前页数：${val}`)
+  currentPage.value = val;
+  paginateTableDatas();
+}
 
 onMounted(() => {
   fetchArticles();
@@ -99,12 +136,12 @@ onMounted(() => {
 const options = ref(null)
 // 沟通服务器获取数据,并将数据赋值给form
 async function fetchArticles2(form) {
-    try {
-        const response = await axios.get('http://localhost:3000/api/types');
-        form.value = response.data.map(tag => tag.type);
-    } catch (error) {
-        console.error('获取文章类型失败：', error);
-    }
+  try {
+    const response = await axios.get('http://localhost:3000/api/types');
+    form.value = response.data.map(tag => tag.type);
+  } catch (error) {
+    console.error('获取文章类型失败：', error);
+  }
 }
 // 获取表格数据
 const tableDatas = ref([])
@@ -112,6 +149,8 @@ async function fetchArticles() {
   try {
     const response = await axios.get('http://localhost:3000/api/articles');
     tableDatas.value = response.data;
+    // 分页
+    paginateTableDatas();
   } catch (error) {
     console.error('获取文章列表失败：', error);
   }
@@ -134,33 +173,33 @@ const uploadedFiles = ref([])
 const uploadRef = ref(null);
 // 上传成功函数
 const handleSuccess = (response, file) => {
-    data.imgUrl = response.url;
+  data.imgUrl = response.url;
 
 }
 // 上传失败函数
 const handleExceed = (files, uploadFiles) => {
-    ElMessage.warning(
-        `限制数量为1`
-    )
+  ElMessage.warning(
+    `限制数量为1`
+  )
 }
 // 上传前的校验
 function beforeUpload(file) {
-    const isJPG = file.type === 'image/jpeg';
-    const isPNG = file.type === 'image/png';
-    const isLt500KB = file.size / 1024 < 500;
-    if (!isJPG && !isPNG) {
-        this.$message.error('上传图片只能是 JPG/PNG 格式!');
-        return false;
-    }
-    if (!isLt500KB) {
-        this.$message.error('上传图片大小不能超过 500KB!');
-        return false;
-    }
-    return true;
+  const isJPG = file.type === 'image/jpeg';
+  const isPNG = file.type === 'image/png';
+  const isLt500KB = file.size / 1024 < 500;
+  if (!isJPG && !isPNG) {
+    this.$message.error('上传图片只能是 JPG/PNG 格式!');
+    return false;
+  }
+  if (!isLt500KB) {
+    this.$message.error('上传图片大小不能超过 500KB!');
+    return false;
+  }
+  return true;
 }
 // 移除图片，服务器同步
-function removeImg(file, fileList){
-    axios.delete(data.imgUrl);
+function removeImg(file, fileList) {
+  axios.delete(data.imgUrl);
 }
 
 
