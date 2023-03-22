@@ -1,5 +1,12 @@
 <template>
   <div>
+    <!-- 添加一个选择器用于筛选类型 -->
+    <el-form-item label="筛选类型" class="m-2">
+      <el-select v-model="selectedType" placeholder="选择类型">
+        <el-option label="全部" value=""></el-option>
+        <el-option v-for="item in options" :key="item" :label="item" :value="item"></el-option>
+      </el-select>
+    </el-form-item>
     <!-- 表格 -->
     <el-table :data="paginatedTableDatas" style="width: 100%">
       <el-table-column prop="url" label="封面" width="180">
@@ -30,16 +37,9 @@
     </el-table>
     <!-- 分页器 -->
     <div class="example-pagination-block">
-      <el-pagination
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        :current-page.sync="currentPage"
-        :page-size.sync="pageSize"
-        layout="total, sizes, prev, pager, next, jumper"
-        :page-sizes="[5]"
-        :total="tableDatas.length"
-        background
-        >
+      <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
+        :current-page.sync="currentPage" :page-size.sync="pageSize" layout="total, sizes, prev, pager, next, jumper"
+        :page-sizes="[5]" :total="tableDatas.length" background>
       </el-pagination>
     </div>
 
@@ -102,32 +102,31 @@
 </template>
 
 <script setup>
-import { reactive, ref, nextTick, onMounted, toRef } from 'vue'
+import { reactive, ref, nextTick, onMounted, toRef,watch } from 'vue'
 import axios from 'axios';
 import Vue3Tinymce from '@jsdawn/vue3-tinymce';
+
 
 // 分页后的数据
 const paginatedTableDatas = ref([])
 const currentPage = ref(1)
 const pageSize = ref(6)
-
 // 处理分页数据
 function paginateTableDatas() {
   const start = (currentPage.value - 1) * pageSize.value;
   const end = start + pageSize.value;
   paginatedTableDatas.value = tableDatas.value.slice(start, end);
 }
-
 function handleSizeChange(val) {
   console.log(`每页 ${val} 条`)
 }
-
 function handleCurrentChange(val) {
   console.log(`当前页数：${val}`)
   currentPage.value = val;
   paginateTableDatas();
 }
 
+// 进入页面获取数据
 onMounted(() => {
   fetchArticles();
   fetchArticles2(options);
@@ -143,12 +142,37 @@ async function fetchArticles2(form) {
     console.error('获取文章类型失败：', error);
   }
 }
+
 // 获取表格数据
 const tableDatas = ref([])
+
+// 当前选中的类型
+const selectedType = ref('')
+// 监听 selectedType 的改变
+watch(selectedType, () => {
+  fetchArticles();
+});
+// 创建一个方法filterByType
+function filterByType() {
+  if (selectedType.value === "All") {
+    fetchArticles();
+  } else {
+    const filteredData = tableDatas.value.filter(
+      (item) => item.type === selectedType.value
+    );
+    paginatedTableDatas.value = filteredData.slice(0, pageSize.value);
+    currentPage.value = 1;
+  }
+}
+// 修改fetchArticles方法，在获取数据后调用filterByType方法
 async function fetchArticles() {
   try {
     const response = await axios.get('http://localhost:3000/api/articles');
-    tableDatas.value = response.data;
+    if (selectedType.value) {
+      tableDatas.value = response.data.filter(article => article.type === selectedType.value);
+    } else {
+      tableDatas.value = response.data;
+    }
     // 分页
     paginateTableDatas();
   } catch (error) {
