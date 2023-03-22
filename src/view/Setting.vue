@@ -29,7 +29,7 @@ onMounted(() => {
 // 沟通服务器获取数据,并将数据赋值给form
 async function fetchArticles(form) {
     try {
-        const response = await axios.get('http://localhost:3000/types');
+        const response = await axios.get('http://localhost:3000/api/types');
         form.value = response.data.map(tag => tag.type);
     } catch (error) {
         console.error('获取文章列表失败：', error);
@@ -42,7 +42,7 @@ const InputRef = ref()
 // 当点击标签的关闭图标时，从标签列表中删除指定的标签。
 const handleClose = (tag) => {
     dynamicTags.value.splice(dynamicTags.value.indexOf(tag), 1)
-    axios.delete('http://localhost:3000/types/' + tag)
+    axios.delete('http://localhost:3000/api/types/' + tag)
         .then(response => {
             console.log(response.data.message);
         })
@@ -63,7 +63,7 @@ const handleInputConfirm = () => {
         dynamicTags.value.push(inputValue.value)
     }
 
-    axios.post('http://localhost:3000/types/', { type: inputValue.value })
+    axios.post('http://localhost:3000/api/types/', { type: inputValue.value })
         .then(response => {
             console.log(response.data.message);
         })

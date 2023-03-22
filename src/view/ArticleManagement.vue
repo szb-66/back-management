@@ -39,7 +39,7 @@
         </el-form-item>
         <!-- 封面 -->
         <el-form-item label="封面">
-          <el-upload ref="uploadRef" class="upload-demo" action="http://localhost:3000/images" :limit="1" list-type="picture-card"
+          <el-upload ref="uploadRef" class="upload-demo" action="http://localhost:3000/api/images" :limit="1" list-type="picture-card"
               :on-exceed="handleExceed" :before-upload="beforeUpload" :on-success="handleSuccess" :file-list="uploadedFiles" :on-remove="removeImg">
               <template #tip>
                   <div class="el-upload__tip">jpg/png files with a size less than 500KB.</div>
@@ -100,17 +100,17 @@ const options = ref(null)
 // 沟通服务器获取数据,并将数据赋值给form
 async function fetchArticles2(form) {
     try {
-        const response = await axios.get('http://localhost:3000/types');
+        const response = await axios.get('http://localhost:3000/api/types');
         form.value = response.data.map(tag => tag.type);
     } catch (error) {
-        console.error('获取文章列表失败：', error);
+        console.error('获取文章类型失败：', error);
     }
 }
 // 获取表格数据
 const tableDatas = ref([])
 async function fetchArticles() {
   try {
-    const response = await axios.get('http://localhost:3000/articles');
+    const response = await axios.get('http://localhost:3000/api/articles');
     tableDatas.value = response.data;
   } catch (error) {
     console.error('获取文章列表失败：', error);
@@ -167,7 +167,7 @@ function removeImg(file, fileList){
 // 删除按钮
 const deleteRow = async (row) => {
   try {
-    await axios.delete(`http://localhost:3000/articles/${row.id}`);
+    await axios.delete(`http://localhost:3000/api/articles/${row.id}`);
     tableDatas.value.splice(tableDatas.value.indexOf(row), 1);
     ElMessage.success('文章已成功删除');
   } catch (error) {
@@ -237,7 +237,7 @@ const confirmEdit = async (dialogId) => {
 
   // 发送更新请求
   try {
-    const response = await axios.put(`http://localhost:3000/articles/${updatedArticle.id}`, updatedArticle);
+    const response = await axios.put(`http://localhost:3000/api/articles/${updatedArticle.id}`, updatedArticle);
     // 本地更新客户端表格数据
     tableDatas.value[dialogId] = { ...updatedArticle, updated_at: response.data.updated_at };
     ElMessage.success('文章已成功更新');

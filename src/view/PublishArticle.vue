@@ -7,7 +7,7 @@
             <el-input v-model="ruleForm.title" />
         </el-form-item>
         <!-- 封面 -->
-        <el-upload ref="uploadRef" class="upload-demo" action="http://localhost:3000/images" :limit="1" list-type="picture-card"
+        <el-upload ref="uploadRef" class="upload-demo" action="http://localhost:3000/api/images" :limit="1" list-type="picture-card"
             :on-exceed="handleExceed" :before-upload="beforeUpload" :on-success="handleSuccess" :file-list="uploadedFiles" :on-remove="removeImg">
             <!-- <el-button type="primary">select file</el-button> -->
             <template #tip>
@@ -75,7 +75,7 @@ onMounted(() => {
 // 沟通服务器获取数据,并将数据赋值给form
 async function fetchArticles(form) {
     try {
-        const response = await axios.get('http://localhost:3000/types');
+        const response = await axios.get('http://localhost:3000/api/types');
         form.value = response.data.map(tag => tag.type);
     } catch (error) {
         console.error('获取文章列表失败：', error);
@@ -124,7 +124,7 @@ const submitForm = async (formEl) => {
         if (valid) {
             try {
                 console.log('提交成功', ruleForm);
-                await axios.post('http://localhost:3000/articles', ruleForm);
+                await axios.post('http://localhost:3000/api/articles', ruleForm);
                 ElMessage({
                     message: `提交成功`,
                     type: 'success',
@@ -187,7 +187,9 @@ const inputVisible = ref(false)
 const InputRef = ref()
 
 const handleClose = (tag) => {
-    ruleForm.tags.value.splice(ruleForm.tags.value.indexOf(tag), 1)
+    // ruleForm.tags.value.splice(ruleForm.tags.value.indexOf(tag), 1)
+    ruleForm.tags.splice(ruleForm.tags.indexOf(tag), 1) // Remove .value from ruleForm.tags
+
 }
 
 const showInput = () => {
