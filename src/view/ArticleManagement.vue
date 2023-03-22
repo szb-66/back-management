@@ -39,7 +39,7 @@
     <div class="example-pagination-block">
       <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
         :current-page.sync="currentPage" :page-size.sync="pageSize" layout="total, sizes, prev, pager, next, jumper"
-        :page-sizes="[5]" :total="tableDatas.length" background>
+        :page-sizes="[6]" :total="tableDatas.length" background>
       </el-pagination>
     </div>
 
