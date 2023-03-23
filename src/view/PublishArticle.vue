@@ -7,7 +7,7 @@
             <el-input v-model="ruleForm.title" />
         </el-form-item>
         <!-- 封面 -->
-        <el-form-item label="封面" prop="imgUrl">
+        <el-form-item label="封面" prop="cover_img_url">
             <el-upload ref="uploadRef" class="upload-demo" action="http://localhost:3000/api/images" :limit="1"
                 list-type="picture-card" :on-exceed="handleExceed" :before-upload="beforeUpload" :on-success="handleSuccess"
                 :file-list="uploadedFiles" :on-remove="removeImg">
@@ -45,9 +45,9 @@
         </el-form-item>
 
         <!-- 内容 -->
-        <el-form-item label="内容" prop="content" label-width="auto" class="custom-form-item222">
-            <vue3-tinymce v-model="ruleForm.content" :setting="state.setting" />
-        </el-form-item>
+<!--         <el-form-item label="内容" prop="content" label-width="auto" class="custom-form-item222">
+        </el-form-item> -->
+        <vue3-tinymce :setting="tinymceInit"/>
 
         <!-- 按钮 -->
         <el-form-item>
@@ -93,18 +93,54 @@ let ruleForm = reactive({
     type: '未分类',
     tags: [],
     content: '',
-    imgUrl: '',
+    cover_img_url: '',
 })
 
 
 // 设置富文本编辑器
-const state = reactive({
+/* const state = reactive({
     // editor 配置项
     setting: {
         language: 'zh-Hans',
         language_url: 'https://unpkg.com/@jsdawn/vue3-tinymce@2.0.2/dist/tinymce/langs/zh-Hans.js',
     },
-});
+}); */
+
+const imagesUploadHandler = function (blobInfo, success, failure) {
+  var xhr, formData;
+  
+  xhr = new XMLHttpRequest();
+  xhr.withCredentials = false;
+  xhr.open('POST', 'http://localhost:3000/api/images');
+  
+  xhr.onload = function() {
+    var json;
+    
+    if (xhr.status != 200) {
+      failure('HTTP Error: ' + xhr.status);
+      return;
+    }
+    
+    json = JSON.parse(xhr.responseText);
+    
+    if (!json || typeof json.location != 'string') {
+      failure('Invalid JSON: ' + xhr.responseText);
+      return;
+    }
+    
+    success(json.location);
+  };
+  
+  formData = new FormData();
+  formData.append('file', blobInfo.blob(), fileName(blobInfo));
+  
+  xhr.send(formData);
+};
+
+const tinymceInit = {
+//   selector: 'textarea'
+  images_upload_handler: imagesUploadHandler
+};
 
 
 // 检测规则
@@ -113,7 +149,7 @@ const rules = reactive({
         { required: true, message: '请输入文章标题', trigger: 'blur' },
         { min: 1, max: 20, message: '长度在1~20之间', trigger: 'blur' },
     ],
-    imgUrl: [
+    cover_img_url: [
         { required: true, message: '请上传封面', trigger: 'blur' },
     ],
     type: [
@@ -216,7 +252,7 @@ const handleInputConfirm = () => {
 const uploadedFiles = ref([]);
 // 上传成功函数
 const handleSuccess = (response, file) => {
-    ruleForm.imgUrl = response.url;
+    ruleForm.cover_img_url = response.url;
     console.log('封面已上传服务器');
 }
 // 上传失败函数
@@ -243,12 +279,12 @@ function beforeUpload(file) {
 }
 // 移除图片，服务器同步
 function removeImg(file = null, fileList = null) {
-    if (!ruleForm.imgUrl) return; // 如果 imgUrl 为空，则不执行删除操作
+    if (!ruleForm.cover_img_url) return; // 如果 cover_img_url 为空，则不执行删除操作
 
-    axios.delete(ruleForm.imgUrl)
+    axios.delete(ruleForm.cover_img_url)
         .then(res => {
             console.log(res.data.message);
-            ruleForm.imgUrl = ''; // 删除成功后清除 imgUrl
+            ruleForm.cover_img_url = ''; // 删除成功后清除 cover_img_url
             if (fileList) {
                 uploadRef.value.clearFiles(); // 清除上传的文件
             }

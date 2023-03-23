@@ -11,7 +11,7 @@
     <el-table :data="paginatedTableDatas" style="width: 100%">
       <el-table-column prop="url" label="封面" width="180">
         <template #default="{ row }">
-          <img style="width: 178px; height: 100px" :src="row.imgUrl"><img>
+          <img style="width: 178px; height: 100px" :src="row.cover_img_url"><img>
         </template>
       </el-table-column>
       <el-table-column prop="title" label="标题" width="180">
@@ -197,7 +197,7 @@ const uploadedFiles = ref([])
 const uploadRef = ref(null);
 // 上传成功函数
 const handleSuccess = (response, file) => {
-  data.imgUrl = response.url;
+  data.cover_img_url = response.url;
   uploadedFiles.value = [file];
 }
 // 上传失败函数
@@ -223,7 +223,7 @@ function beforeUpload(file) {
 }
 // 移除图片，服务器同步
 function removeImg(file, fileList) {
-  axios.delete(data.imgUrl);
+  axios.delete(data.cover_img_url);
   uploadedFiles.value = []; // 清空uploadedFiles数组
 }
 
@@ -254,7 +254,7 @@ const data = reactive({
   content: '',
   created_at: '',
   updated_at: '',
-  imgUrl: ''
+  cover_img_url: ''
 })
 
 // 点击的对话框id
@@ -269,12 +269,12 @@ const editRow = (row) => {
   data.content = row.content
   data.created_at = row.created_at
   data.updated_at = row.updated_at
-  data.imgUrl = row.imgUrl
+  data.cover_img_url = row.cover_img_url
 
   // 更新uploadedFiles数组
   uploadedFiles.value = [{
     name: 'cover_image',
-    url: row.imgUrl
+    url: row.cover_img_url
   }];
 
   dialogId.value = tableDatas.value.indexOf(row)
@@ -291,7 +291,7 @@ const confirmEdit = async (dialogId) => {
     tags: data.tags,
     content: data.content,
     created_at: tableDatas.value[dialogId].created_at,
-    imgUrl: data.imgUrl
+    cover_img_url: data.cover_img_url
   };
   // 检查新旧数据是否相同
   const isDataUnchanged =
@@ -299,7 +299,7 @@ const confirmEdit = async (dialogId) => {
     tableDatas.value[dialogId].type === updatedArticle.type &&
     JSON.stringify(tableDatas.value[dialogId].tags) === JSON.stringify(updatedArticle.tags) &&
     tableDatas.value[dialogId].content === updatedArticle.content &&
-    tableDatas.value[dialogId].imgUrl === updatedArticle.imgUrl;
+    tableDatas.value[dialogId].cover_img_url === updatedArticle.cover_img_url;
   // 如果数据未发生更改，则直接关闭弹窗并返回
   if (isDataUnchanged) {
     dialogVisible.value = false;
