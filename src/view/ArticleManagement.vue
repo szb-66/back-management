@@ -85,10 +85,14 @@
           </el-button>
         </el-form-item>
         <!-- 内容 -->
-        <el-form-item label="内容" class="custom-form-item222">
-          <!-- <el-input v-model="data.content"></el-input> -->
+        <!--         <el-form-item label="内容" class="custom-form-item222">
           <vue3-tinymce v-model="data.content" :setting="state.setting" />
+        </el-form-item> -->
+        <el-form-item label="内容" class="custom-form-item222">
+          <Editor id="content" :init="tinymceInit" v-model="data.content"
+            api-key="8dhhq3d47uy2o92tjh5anq5m1c7vm7dixz6t6r9fhht67bpd"></Editor>
         </el-form-item>
+
       </el-form>
       <!-- 对话框底部 -->
       <template #footer>
@@ -105,6 +109,7 @@
 import { reactive, ref, nextTick, onMounted, toRef, watch } from 'vue'
 import axios from 'axios';
 import Vue3Tinymce from '@jsdawn/vue3-tinymce';
+import Editor from '@tinymce/tinymce-vue';
 
 
 // 分页后的数据
@@ -164,12 +169,12 @@ function filterByType() {
     currentPage.value = 1;
   }
 }
-// 修改fetchArticles方法，在获取数据后调用filterByType方法
+// 在获取数据后调用filterByType方法
 async function fetchArticles() {
   try {
     const response = await axios.get('http://localhost:3000/api/articles');
     if (selectedType.value) {
-      tableDatas.value = response.data.filter(article => article.type === selectedType.value);
+      tableDatas.value = response.data.filter(article => article.type === selectedType.value)
     } else {
       tableDatas.value = response.data;
     }
@@ -181,15 +186,38 @@ async function fetchArticles() {
 }
 
 // 设置富文本编辑器
-const state = reactive({
-  // editor 配置项
-  setting: {
-    // height: 400, 
-    // width: 800, 
-    language: 'zh-Hans',
-    language_url: 'https://unpkg.com/@jsdawn/vue3-tinymce@2.0.2/dist/tinymce/langs/zh-Hans.js',
-  },
+const example_image_upload_handler = (blobInfo, progress) => new Promise((resolve, reject) => {
+  const formData = new FormData();
+  formData.append('file', blobInfo.blob(), blobInfo.filename());
+
+  axios.post('http://localhost:3000/api/images', formData, {
+    withCredentials: false,
+    onUploadProgress: (e) => {
+      progress(e.loaded / e.total * 100);
+    }
+  })
+    .then(response => {
+      const json = response.data.url;
+
+      if (!json || typeof json != 'string') {
+        reject('Invalid JSON: ' + JSON.stringify(json));
+        return;
+      }
+      resolve(json);
+    })
+    .catch(error => {
+      if (error.response && error.response.status === 403) {
+        reject({ message: 'HTTP Error: ' + error.response.status, remove: true });
+      } else {
+        reject('HTTP Error: ' + error.message);
+      }
+    });
 });
+const tinymceInit = {
+  language: 'zh-Hans',
+  language_url: 'https://unpkg.com/@jsdawn/vue3-tinymce@2.0.2/dist/tinymce/langs/zh-Hans.js',
+  images_upload_handler: example_image_upload_handler,
+};
 
 // 封面
 const uploadedFiles = ref([])
