@@ -7,14 +7,19 @@
             <el-input v-model="ruleForm.title" />
         </el-form-item>
         <!-- 封面 -->
-        <el-upload ref="uploadRef" class="upload-demo" action="http://localhost:3000/api/images" :limit="1" list-type="picture-card"
-            :on-exceed="handleExceed" :before-upload="beforeUpload" :on-success="handleSuccess" :file-list="uploadedFiles" :on-remove="removeImg">
-            <!-- <el-button type="primary">select file</el-button> -->
-            <template #tip>
-                <div class="el-upload__tip">jpg/png files with a size less than 500KB.</div>
-            </template>
-            <el-icon><Plus /></el-icon>
-        </el-upload>
+        <el-form-item label="封面" prop="imgUrl">
+            <el-upload ref="uploadRef" class="upload-demo" action="http://localhost:3000/api/images" :limit="1"
+                list-type="picture-card" :on-exceed="handleExceed" :before-upload="beforeUpload" :on-success="handleSuccess"
+                :file-list="uploadedFiles" :on-remove="removeImg">
+                <!-- <el-button type="primary">select file</el-button> -->
+                <template #tip>
+                    <div class="el-upload__tip">jpg/png files with a size less than 500KB.</div>
+                </template>
+                <el-icon>
+                    <Plus />
+                </el-icon>
+            </el-upload>
+        </el-form-item>
 
         <!-- 类型 -->
         <el-form-item label="类型" prop="type">
@@ -107,6 +112,9 @@ const rules = reactive({
     title: [
         { required: true, message: '请输入文章标题', trigger: 'blur' },
         { min: 1, max: 20, message: '长度在1~20之间', trigger: 'blur' },
+    ],
+    imgUrl: [
+        { required: true, message: '请上传封面', trigger: 'blur' },
     ],
     type: [
         { required: true, message: '请选择文章类型', trigger: 'change', },
@@ -234,10 +242,10 @@ function beforeUpload(file) {
         return false;
     }
     return true;
-    
+
 }
 // 移除图片，服务器同步
-function removeImg(file, fileList){
+function removeImg(file, fileList) {
     axios.delete(ruleForm.imgUrl);
 }
 
