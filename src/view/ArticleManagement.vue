@@ -102,7 +102,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, nextTick, onMounted, toRef,watch } from 'vue'
+import { reactive, ref, nextTick, onMounted, toRef, watch } from 'vue'
 import axios from 'axios';
 import Vue3Tinymce from '@jsdawn/vue3-tinymce';
 
@@ -232,6 +232,8 @@ const deleteRow = async (row) => {
   try {
     await axios.delete(`http://localhost:3000/api/articles/${row.id}`);
     tableDatas.value.splice(tableDatas.value.indexOf(row), 1);
+    // 更新 paginatedTableDatas 以便表格显示正确的内容
+    paginateTableDatas();
     ElMessage.success('文章已成功删除');
   } catch (error) {
     console.error('删除文章失败：', error);
