@@ -198,7 +198,7 @@ const uploadRef = ref(null);
 // 上传成功函数
 const handleSuccess = (response, file) => {
   data.imgUrl = response.url;
-
+  uploadedFiles.value = [file];
 }
 // 上传失败函数
 const handleExceed = (files, uploadFiles) => {
@@ -224,6 +224,7 @@ function beforeUpload(file) {
 // 移除图片，服务器同步
 function removeImg(file, fileList) {
   axios.delete(data.imgUrl);
+  uploadedFiles.value = []; // 清空uploadedFiles数组
 }
 
 
@@ -269,6 +270,12 @@ const editRow = (row) => {
   data.created_at = row.created_at
   data.updated_at = row.updated_at
   data.imgUrl = row.imgUrl
+
+  // 更新uploadedFiles数组
+  uploadedFiles.value = [{
+    name: 'cover_image',
+    url: row.imgUrl
+  }];
 
   dialogId.value = tableDatas.value.indexOf(row)
   dialogVisible.value = true

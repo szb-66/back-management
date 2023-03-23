@@ -126,7 +126,6 @@ const rules = reactive({
 
 // 上传新文章
 const submitForm = async (formEl) => {
-    console.log();
     if (!formEl) return
     await formEl.validate(async (valid, fields) => {
         if (valid) {
@@ -169,17 +168,17 @@ const resetForm = (formEl) => {
         }
     )
         .then(() => {
+            // 清除上传的文件
+            if (uploadRef.value) {
+                removeImg()
+                uploadRef.value.clearFiles();
+            }
+            // 清除表单字段
+            formEl.resetFields()
             ElMessage({
                 type: 'success',
                 message: '清除成功',
             })
-            // 清除表单字段
-            formEl.resetFields()
-            // 清除上传的文件
-            if (uploadRef.value) {
-                uploadRef.value.clearFiles();
-                removeImg()
-            }
         })
         .catch(() => {
             ElMessage({
@@ -195,18 +194,15 @@ const inputVisible = ref(false)
 const InputRef = ref()
 
 const handleClose = (tag) => {
-    // ruleForm.tags.value.splice(ruleForm.tags.value.indexOf(tag), 1)
     ruleForm.tags.splice(ruleForm.tags.indexOf(tag), 1) // Remove .value from ruleForm.tags
 
 }
-
 const showInput = () => {
     inputVisible.value = true
     nextTick(() => {
         InputRef.value.input.focus()
     })
 }
-
 const handleInputConfirm = () => {
     if (inputValue.value) {
         ruleForm.tags.push(inputValue.value)
@@ -216,11 +212,12 @@ const handleInputConfirm = () => {
 }
 
 // 上传封面相关函数
+// 封面路径存放的变量
 const uploadedFiles = ref([]);
 // 上传成功函数
 const handleSuccess = (response, file) => {
-    console.log(response.url);
     ruleForm.imgUrl = response.url;
+    console.log('封面已上传服务器');
 }
 // 上传失败函数
 const handleExceed = (files, uploadFiles) => {
@@ -245,8 +242,20 @@ function beforeUpload(file) {
 
 }
 // 移除图片，服务器同步
-function removeImg(file, fileList) {
-    axios.delete(ruleForm.imgUrl);
+function removeImg(file = null, fileList = null) {
+    if (!ruleForm.imgUrl) return; // 如果 imgUrl 为空，则不执行删除操作
+
+    axios.delete(ruleForm.imgUrl)
+        .then(res => {
+            console.log(res.data.message);
+            ruleForm.imgUrl = ''; // 删除成功后清除 imgUrl
+            if (fileList) {
+                uploadRef.value.clearFiles(); // 清除上传的文件
+            }
+        })
+        .catch(err => {
+            console.log(err.message);
+        })
 }
 
 </script>
