@@ -45,9 +45,11 @@
         </el-form-item>
 
         <!-- 内容 -->
-<!--         <el-form-item label="内容" prop="content" label-width="auto" class="custom-form-item222">
-        </el-form-item> -->
-        <vue3-tinymce :setting="tinymceInit"/>
+        <el-form-item label="内容" prop="content" label-width="auto" class="custom-form-item222">
+            <Editor id="content" :init="tinymceInit" v-model="ruleForm.content"
+                api-key="8dhhq3d47uy2o92tjh5anq5m1c7vm7dixz6t6r9fhht67bpd" ></Editor>
+        </el-form-item>
+        <!-- <vue3-tinymce :setting="tinymceInit"/> -->
 
         <!-- 按钮 -->
         <el-form-item>
@@ -63,6 +65,9 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import axios from 'axios';
 // 详细地址 https://juejin.cn/post/7012073370023886856
 import Vue3Tinymce from '@jsdawn/vue3-tinymce';
+import Editor from '@tinymce/tinymce-vue';
+// 导出tinymce的插件
+// import 'tinymce/plugins/image';
 
 
 const formSize = ref('default')
@@ -98,49 +103,41 @@ let ruleForm = reactive({
 
 
 // 设置富文本编辑器
-/* const state = reactive({
-    // editor 配置项
-    setting: {
-        language: 'zh-Hans',
-        language_url: 'https://unpkg.com/@jsdawn/vue3-tinymce@2.0.2/dist/tinymce/langs/zh-Hans.js',
-    },
-}); */
+const example_image_upload_handler = (blobInfo, progress) => new Promise((resolve, reject) => {
+    const formData = new FormData();
+    formData.append('file', blobInfo.blob(), blobInfo.filename());
 
-const imagesUploadHandler = function (blobInfo, success, failure) {
-  var xhr, formData;
-  
-  xhr = new XMLHttpRequest();
-  xhr.withCredentials = false;
-  xhr.open('POST', 'http://localhost:3000/api/images');
-  
-  xhr.onload = function() {
-    var json;
-    
-    if (xhr.status != 200) {
-      failure('HTTP Error: ' + xhr.status);
-      return;
-    }
-    
-    json = JSON.parse(xhr.responseText);
-    
-    if (!json || typeof json.location != 'string') {
-      failure('Invalid JSON: ' + xhr.responseText);
-      return;
-    }
-    
-    success(json.location);
-  };
-  
-  formData = new FormData();
-  formData.append('file', blobInfo.blob(), fileName(blobInfo));
-  
-  xhr.send(formData);
-};
+    axios.post('http://localhost:3000/api/images', formData, {
+        withCredentials: false,
+        onUploadProgress: (e) => {
+            progress(e.loaded / e.total * 100);
+        }
+    })
+        .then(response => {
+            const json = response.data.url;
 
+            if (!json || typeof json != 'string') {
+                reject('Invalid JSON: ' + JSON.stringify(json));
+                return;
+            }
+            resolve(json);
+        })
+        .catch(error => {
+            if (error.response && error.response.status === 403) {
+                reject({ message: 'HTTP Error: ' + error.response.status, remove: true });
+            } else {
+                reject('HTTP Error: ' + error.message);
+            }
+        });
+});
 const tinymceInit = {
-//   selector: 'textarea'
-  images_upload_handler: imagesUploadHandler
+    language: 'zh-Hans',
+    language_url: 'https://unpkg.com/@jsdawn/vue3-tinymce@2.0.2/dist/tinymce/langs/zh-Hans.js',
+    images_upload_handler: example_image_upload_handler,
 };
+
+
+
 
 
 // 检测规则
@@ -211,6 +208,8 @@ const resetForm = (formEl) => {
             }
             // 清除表单字段
             formEl.resetFields()
+            // 清除富文本编辑器内容
+            ruleForm.content = '';
             ElMessage({
                 type: 'success',
                 message: '清除成功',
