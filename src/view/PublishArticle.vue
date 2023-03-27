@@ -8,7 +8,7 @@
         </el-form-item>
         <!-- 封面 -->
         <el-form-item label="封面" prop="cover_img_url">
-            <el-upload ref="uploadRef" class="upload-demo" action="http://localhost:3000/api/images" :limit="1"
+            <el-upload ref="uploadRef" class="upload-demo" action="szb-api/images" :limit="1"
                 list-type="picture-card" :on-exceed="handleExceed" :before-upload="beforeUpload" :on-success="handleSuccess"
                 :file-list="uploadedFiles" :on-remove="removeImg">
                 <!-- <el-button type="primary">select file</el-button> -->
@@ -85,7 +85,7 @@ onMounted(() => {
 // 沟通服务器获取数据,并将数据赋值给form
 async function fetchArticles(form) {
     try {
-        const response = await axios.get('http://localhost:3000/api/types');
+        const response = await axios.get('szb-api/types');
         form.value = response.data.map(tag => tag.type);
     } catch (error) {
         console.error('获取文章列表失败：', error);
@@ -107,7 +107,7 @@ const example_image_upload_handler = (blobInfo, progress) => new Promise((resolv
     const formData = new FormData();
     formData.append('file', blobInfo.blob(), blobInfo.filename());
 
-    axios.post('http://localhost:3000/api/images', formData, {
+    axios.post('szb-api/images', formData, {
         withCredentials: false,
         onUploadProgress: (e) => {
             progress(e.loaded / e.total * 100);
@@ -164,17 +164,17 @@ const submitForm = async (formEl) => {
         if (valid) {
             try {
                 console.log('提交成功', ruleForm);
-                await axios.post('http://localhost:3000/api/articles', ruleForm);
-                ElMessage({
-                    message: `提交成功`,
-                    type: 'success',
-                })
+                await axios.post('szb-api/articles', ruleForm);
                 // 清除表单字段
                 formEl.resetFields()
                 // 清除上传的文件
                 if (uploadRef.value) {
                     uploadRef.value.clearFiles();
                 }
+                ElMessage({
+                    message: `提交成功`,
+                    type: 'success',
+                })
             } catch (error) {
                 console.error('提交失败', error);
                 ElMessage({

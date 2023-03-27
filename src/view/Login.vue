@@ -41,7 +41,7 @@ const emits = defineEmits(['login-success']);
 
 // 向服务器提交数据
 const onSubmit = () => {
-    axios.post('http://localhost:3000/api/login', {
+    axios.post('szb-api/login', {
         username: username.value,
         password: password.value,
     }).then(res => {

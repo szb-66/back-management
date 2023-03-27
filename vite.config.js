@@ -17,6 +17,13 @@ export default defineConfig({
   server: {
     // 自动
     open: true,
+    proxy: {
+      '/szb-api': {
+        target: 'http://szb.design:3000/api',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/szb-api/, ''),
+      },
+    },
   }
 })
 

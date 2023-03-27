@@ -52,7 +52,7 @@
         </el-form-item>
         <!-- 封面 -->
         <el-form-item label="封面">
-          <el-upload ref="uploadRef" class="upload-demo" action="http://localhost:3000/api/images" :limit="1"
+          <el-upload ref="uploadRef" class="upload-demo" action="szb-api/images" :limit="1"
             list-type="picture-card" :on-exceed="handleExceed" :before-upload="beforeUpload" :on-success="handleSuccess"
             :file-list="uploadedFiles" :on-remove="removeImg">
             <template #tip>
@@ -141,7 +141,7 @@ const options = ref(null)
 // 沟通服务器获取数据,并将数据赋值给form
 async function fetchArticles2(form) {
   try {
-    const response = await axios.get('http://localhost:3000/api/types');
+    const response = await axios.get('szb-api/types');
     form.value = response.data.map(tag => tag.type);
   } catch (error) {
     console.error('获取文章类型失败：', error);
@@ -172,7 +172,7 @@ function filterByType() {
 // 在获取数据后调用filterByType方法
 async function fetchArticles() {
   try {
-    const response = await axios.get('http://localhost:3000/api/articles');
+    const response = await axios.get('szb-api/articles');
     if (selectedType.value) {
       tableDatas.value = response.data.filter(article => article.type === selectedType.value)
     } else {
@@ -190,7 +190,7 @@ const example_image_upload_handler = (blobInfo, progress) => new Promise((resolv
   const formData = new FormData();
   formData.append('file', blobInfo.blob(), blobInfo.filename());
 
-  axios.post('http://localhost:3000/api/images', formData, {
+  axios.post('szb-api/images', formData, {
     withCredentials: false,
     onUploadProgress: (e) => {
       progress(e.loaded / e.total * 100);
@@ -259,7 +259,7 @@ function removeImg(file, fileList) {
 // 删除按钮
 const deleteRow = async (row) => {
   try {
-    await axios.delete(`http://localhost:3000/api/articles/${row.id}`);
+    await axios.delete(`szb-api/articles/${row.id}`);
     tableDatas.value.splice(tableDatas.value.indexOf(row), 1);
     // 更新 paginatedTableDatas 以便表格显示正确的内容
     paginateTableDatas();
@@ -337,7 +337,7 @@ const confirmEdit = async (dialogId) => {
 
   // 发送更新请求
   try {
-    const response = await axios.put(`http://localhost:3000/api/articles/${updatedArticle.id}`, updatedArticle);
+    const response = await axios.put(`szb-api/articles/${updatedArticle.id}`, updatedArticle);
     // 本地更新客户端表格数据
     tableDatas.value[dialogId] = { ...updatedArticle, updated_at: response.data.updated_at };
     ElMessage.success('文章已成功更新');
