@@ -4,7 +4,7 @@
     <el-form-item label="筛选类型" class="m-2">
       <el-select v-model="selectedType" placeholder="选择类型">
         <el-option label="全部" value=""></el-option>
-        <el-option v-for="item in options" :key="item" :label="item" :value="item"></el-option>
+        <el-option v-for="item in types" :key="item" :label="item" :value="item"></el-option>
       </el-select>
     </el-form-item>
     <!-- 表格 -->
@@ -17,6 +17,8 @@
       <el-table-column prop="title" label="标题" width="180">
       </el-table-column>
       <el-table-column prop="type" label="类型" width="180">
+      </el-table-column>
+      <el-table-column prop="knowledge_base" label="知识库" width="180">
       </el-table-column>
       <el-table-column prop="tags" label="标签">
         <template #default="{ row }">
@@ -65,9 +67,14 @@
         </el-form-item>
         <!-- 类型 -->
         <el-form-item label="类型">
-          <!-- 选择器 -->
           <el-select v-model="data.type" class="m-2" placeholder="Select">
-            <el-option v-for="item in options" :key="item" :label="item" :value="item" />
+            <el-option v-for="item in types" :key="item" :label="item" :value="item" />
+          </el-select>
+        </el-form-item>
+        <!-- 知识库 -->
+        <el-form-item label="知识库">
+          <el-select v-model="data.knowledge_base" class="m-2" placeholder="Select">
+            <el-option v-for="item in base" :key="item" :label="item" :value="item" />
           </el-select>
         </el-form-item>
         <!-- 标签 -->
@@ -85,9 +92,6 @@
           </el-button>
         </el-form-item>
         <!-- 内容 -->
-        <!--         <el-form-item label="内容" class="custom-form-item222">
-          <vue3-tinymce v-model="data.content" :setting="state.setting" />
-        </el-form-item> -->
         <el-form-item label="内容" class="custom-form-item222">
           <Editor id="content" :init="tinymceInit" v-model="data.content"
             api-key="8dhhq3d47uy2o92tjh5anq5m1c7vm7dixz6t6r9fhht67bpd"></Editor>
@@ -111,6 +115,7 @@ import axios from 'axios';
 import Vue3Tinymce from '@jsdawn/vue3-tinymce';
 import Editor from '@tinymce/tinymce-vue';
 
+const base = ['设计知识库','开发知识库'] //知识库选项
 
 // 分页后的数据
 const paginatedTableDatas = ref([])
@@ -134,15 +139,16 @@ function handleCurrentChange(val) {
 // 进入页面获取数据
 onMounted(() => {
   fetchArticles();
-  fetchArticles2(options);
+  fetchArticles2(types);
 });
+
 // 类型选项
-const options = ref(null)
-// 沟通服务器获取数据,并将数据赋值给form
-async function fetchArticles2(form) {
+const types = ref(null)
+// 沟通服务器获取数据,并将数据赋值给types
+async function fetchArticles2(types) {
   try {
     const response = await axios.get('szb-api/types');
-    form.value = response.data.map(tag => tag.type);
+    types.value = response.data.map(tag => tag.type);
   } catch (error) {
     console.error('获取文章类型失败：', error);
   }
@@ -234,6 +240,7 @@ const handleExceed = (files, uploadFiles) => {
     `限制数量为1`
   )
 }
+
 // 上传前的校验
 function beforeUpload(file) {
   const isJPG = file.type === 'image/jpeg';
@@ -249,12 +256,12 @@ function beforeUpload(file) {
   }
   return true;
 }
+
 // 移除图片，服务器同步
 function removeImg(file, fileList) {
   axios.delete(data.cover_img_url);
   uploadedFiles.value = []; // 清空uploadedFiles数组
 }
-
 
 // 删除按钮
 const deleteRow = async (row) => {
@@ -282,7 +289,8 @@ const data = reactive({
   content: '',
   created_at: '',
   updated_at: '',
-  cover_img_url: ''
+  cover_img_url: '',
+  knowledge_base:'',
 })
 
 // 点击的对话框id
@@ -298,6 +306,7 @@ const editRow = (row) => {
   data.created_at = row.created_at
   data.updated_at = row.updated_at
   data.cover_img_url = row.cover_img_url
+  data.knowledge_base = row.knowledge_base
 
   // 更新uploadedFiles数组
   uploadedFiles.value = [{
@@ -319,7 +328,8 @@ const confirmEdit = async (dialogId) => {
     tags: data.tags,
     content: data.content,
     created_at: tableDatas.value[dialogId].created_at,
-    cover_img_url: data.cover_img_url
+    cover_img_url: data.cover_img_url,
+    knowledge_base: data.knowledge_base
   };
   // 检查新旧数据是否相同
   const isDataUnchanged =
@@ -327,7 +337,8 @@ const confirmEdit = async (dialogId) => {
     tableDatas.value[dialogId].type === updatedArticle.type &&
     JSON.stringify(tableDatas.value[dialogId].tags) === JSON.stringify(updatedArticle.tags) &&
     tableDatas.value[dialogId].content === updatedArticle.content &&
-    tableDatas.value[dialogId].cover_img_url === updatedArticle.cover_img_url;
+    tableDatas.value[dialogId].cover_img_url === updatedArticle.cover_img_url &&
+    tableDatas.value[dialogId].knowledge_base === updatedArticle.knowledge_base;
   // 如果数据未发生更改，则直接关闭弹窗并返回
   if (isDataUnchanged) {
     dialogVisible.value = false;
@@ -340,6 +351,7 @@ const confirmEdit = async (dialogId) => {
     const response = await axios.put(`szb-api/articles/${updatedArticle.id}`, updatedArticle);
     // 本地更新客户端表格数据
     tableDatas.value[dialogId] = { ...updatedArticle, updated_at: response.data.updated_at };
+    paginateTableDatas();
     ElMessage.success('文章已成功更新');
   } catch (error) {
     console.error('更新文章失败：', error);

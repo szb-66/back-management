@@ -28,6 +28,13 @@
             </el-select>
         </el-form-item>
 
+        <!-- 知识库 -->
+        <el-form-item label="知识库" prop="knowledge_base">
+            <el-select v-model="ruleForm.knowledge_base" placeholder="请选择">
+                <el-option v-for="item in base" :key="item" :label="item" :value="item" />
+            </el-select>
+        </el-form-item>
+
         <!-- 标签，隐藏输入框来传值 -->
         <el-form-item label="标签" prop="tags">
             <!-- 输入框 -->
@@ -79,9 +86,11 @@ const uploadRef = ref(null);
 
 // 类型选项
 const options = ref(null)
+
 onMounted(() => {
     fetchArticles(options);
 });
+
 // 沟通服务器获取数据,并将数据赋值给form
 async function fetchArticles(form) {
     try {
@@ -99,7 +108,10 @@ let ruleForm = reactive({
     tags: [],
     content: '',
     cover_img_url: '',
+    knowledge_base: '未分类',
 })
+
+const base = ['设计知识库','开发知识库']
 
 
 // 设置富文本编辑器
