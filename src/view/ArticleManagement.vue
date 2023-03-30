@@ -112,7 +112,7 @@
 <script setup>
 import { reactive, ref, nextTick, onMounted, toRef, watch } from 'vue'
 import axios from 'axios';
-
+import Editor from '@tinymce/tinymce-vue';
 const base = ['设计知识库','开发知识库'] //知识库选项
 
 // 分页后的数据
