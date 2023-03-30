@@ -65,7 +65,7 @@
         </el-form-item>
     </el-form>
 </template>
-  
+
 <script setup>
 import { computed, nextTick, reactive, ref, watchEffect, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -76,6 +76,8 @@ import Editor from '@tinymce/tinymce-vue';
 // 导出tinymce的插件
 // import 'tinymce/plugins/image';
 
+import TypeApi from '../http/module/TypeApi';
+import ArticleApi from '../http/module/ArticleApi';
 
 const formSize = ref('default')
 // 表单的ref实例
@@ -94,8 +96,9 @@ onMounted(() => {
 // 沟通服务器获取数据,并将数据赋值给form
 async function fetchArticles(form) {
     try {
-        const response = await axios.get('szb-api/types');
-        form.value = response.data.map(tag => tag.type);
+        await TypeApi.query().then(response => {
+            form.value = response.map(tag => tag.type);
+        });
     } catch (error) {
         console.error('获取文章列表失败：', error);
     }
@@ -174,28 +177,22 @@ const submitForm = async (formEl) => {
     if (!formEl) return
     await formEl.validate(async (valid, fields) => {
         if (valid) {
-            try {
-                console.log('提交成功', ruleForm);
-                await axios.post('szb-api/articles', ruleForm);
+            console.log('提交成功', ruleForm);
+            await ArticleApi.create(ruleForm).then(res => {
                 // 清除表单字段
                 formEl.resetFields()
                 // 清除上传的文件
                 if (uploadRef.value) {
                     uploadRef.value.clearFiles();
                 }
-                ElMessage({
-                    message: `提交成功`,
-                    type: 'success',
-                })
-            } catch (error) {
+                ElMessage.success("提交成功");
+            }).catch(error => {
                 console.error('提交失败', error);
-                ElMessage({
-                    message: `提交失败`,
-                    type: 'error',
-                });
-            }
+                ElMessage.error("提交失败");
+            })
         } else {
             console.log('error submit!', fields)
+            ElMessage.error("请完善信息");
         }
     })
 }
@@ -306,17 +303,16 @@ function removeImg(file = null, fileList = null) {
 }
 
 </script>
-  
-  
-  
-  
+
+
+
+
 <style lang = "less" scoped>
 .custom-form-item222 :deep(.el-form-item__content) {
     // 强制添加属性
     display: block !important;
 }
 </style>
-  
-  
+
+
 <style></style>
-  

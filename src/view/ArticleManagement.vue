@@ -4,7 +4,7 @@
     <el-form-item label="筛选类型" class="m-2">
       <el-select v-model="selectedType" placeholder="选择类型">
         <el-option label="全部" value=""></el-option>
-        <el-option v-for="item in types" :key="item" :label="item" :value="item"></el-option>
+        <el-option v-for="item in types" :key="item" :label="item" :value="item"/>
       </el-select>
     </el-form-item>
     <!-- 表格 -->
@@ -18,7 +18,7 @@
       </el-table-column>
       <el-table-column prop="type" label="类型" width="180">
       </el-table-column>
-      <el-table-column prop="knowledge_base" label="知识库" width="180">
+      <el-table-column prop="knowledge_base" label="知识库">
       </el-table-column>
       <el-table-column prop="tags" label="标签">
         <template #default="{ row }">
@@ -29,7 +29,7 @@
       </el-table-column>
       <el-table-column prop="updated_at" label="更新时间" width="180" sortable>
       </el-table-column>
-      <el-table-column label="编辑">
+      <el-table-column label="操作" min-width="200">
         <!-- 按钮 -->
         <template #default="{ row }">
           <el-button @click="editRow(row)" size="small" type="primary">编辑</el-button>
@@ -113,6 +113,8 @@
 import { reactive, ref, nextTick, onMounted, toRef, watch } from 'vue'
 import axios from 'axios';
 import Editor from '@tinymce/tinymce-vue';
+import ArticleApi from '../http/module/ArticleApi';
+import TypeApi from '../http/module/TypeApi';
 const base = ['设计知识库','开发知识库'] //知识库选项
 
 // 分页后的数据
@@ -144,12 +146,11 @@ onMounted(() => {
 const types = ref(null)
 // 沟通服务器获取数据,并将数据赋值给types
 async function fetchArticles2(types) {
-  try {
-    const response = await axios.get('szb-api/types');
-    types.value = response.data.map(tag => tag.type);
-  } catch (error) {
-    console.error('获取文章类型失败：', error);
-  }
+  await TypeApi.query().then(response => {
+    types.value = response.map(tag => tag.type);
+  }).catch(error => {
+    ElMessage.error('获取文章类型失败')
+  });
 }
 
 // 获取表格数据
@@ -175,18 +176,15 @@ function filterByType() {
 }
 // 在获取数据后调用filterByType方法
 async function fetchArticles() {
-  try {
-    const response = await axios.get('szb-api/articles');
-    if (selectedType.value) {
-      tableDatas.value = response.data.filter(article => article.type === selectedType.value)
-    } else {
-      tableDatas.value = response.data;
-    }
-    // 分页
-    paginateTableDatas();
-  } catch (error) {
-    console.error('获取文章列表失败：', error);
-  }
+    await ArticleApi.query().then(response => {
+      if (selectedType.value) {
+        tableDatas.value = (response || []).filter(article => article.type === selectedType.value)
+      } else {
+        tableDatas.value = response || [];
+      }
+      // 分页
+      paginateTableDatas();
+    }).catch(error => console.error('获取文章列表失败：', error));
 }
 
 // 设置富文本编辑器
@@ -263,16 +261,14 @@ function removeImg(file, fileList) {
 
 // 删除按钮
 const deleteRow = async (row) => {
-  try {
-    await axios.delete(`szb-api/articles/${row.id}`);
+  ArticleApi.delete(row.id).then(() => {
     tableDatas.value.splice(tableDatas.value.indexOf(row), 1);
     // 更新 paginatedTableDatas 以便表格显示正确的内容
     paginateTableDatas();
     ElMessage.success('文章已成功删除');
-  } catch (error) {
-    console.error('删除文章失败：', error);
+  }).catch(error => {
     ElMessage.error('删除文章失败');
-  }
+  })
 };
 
 // 对话框显示状态
@@ -345,18 +341,18 @@ const confirmEdit = async (dialogId) => {
   }
 
   // 发送更新请求
-  try {
-    const response = await axios.put(`szb-api/articles/${updatedArticle.id}`, updatedArticle);
+  const response = await ArticleApi.update(updatedArticle.id, updatedArticle).then(response => {
     // 本地更新客户端表格数据
-    tableDatas.value[dialogId] = { ...updatedArticle, updated_at: response.data.updated_at };
+    tableDatas.value[dialogId] = { ...updatedArticle, updated_at: response.updated_at };
     paginateTableDatas();
     ElMessage.success('文章已成功更新');
-  } catch (error) {
+  }).catch(error => {
     console.error('更新文章失败：', error);
     ElMessage.error('更新文章失败');
-  }
-  dialogVisible.value = false;
-  dialogId = '';
+  }).finally(() => {
+    dialogVisible.value = false;
+    dialogId = '';
+  });
 };
 
 // 对话框中的标签编辑功能

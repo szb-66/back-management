@@ -32,46 +32,34 @@
 <script setup>
 import { ref,defineEmits } from 'vue'
 import axios from 'axios'
+import UserApi from '../http/module/UserApi';
 
-const username = ref('')
-const password = ref('')
+const username = ref('');
+const password = ref('');
 
 // 定义自定义事件
 const emits = defineEmits(['login-success']);
 
 // 向服务器提交数据
 const onSubmit = () => {
-    axios.post('szb-api/login', {
+    UserApi.login({
         username: username.value,
         password: password.value,
     }).then(res => {
-        if (res.data.message === '登陆成功') {
-            ElMessage({
-                message: '登陆成功',
-                type: 'success',
-            });
+        if (res.message === '登陆成功') {
+            ElMessage.success("登陆成功");
             // 触发自定义事件，通知父组件更新 showLogin 的值
             emits('login-success');
         } else {
-            ElMessage({
-                message: '登陆失败',
-                type: 'error',
-            });
+            ElMessage.error("登陆失败")
         }
-    }).catch(err => {
-        ElMessage({
-            message: err.message,
-            type: 'error',
-        });
-    });
+    }).catch(error => {
+        console.error(error.message);
+        ElMessage.error("登陆失败");
+    })
 };
 
 </script>
-
-
-
-
-
 
 <style lang="less" scoped>
 * {

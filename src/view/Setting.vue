@@ -13,11 +13,12 @@
         </el-button>
     </div>
 </template>
-  
+
 <script setup>
 import { nextTick, ref, onMounted } from 'vue'
 import { ElInput } from 'element-plus'
 import axios from 'axios';
+import TypeApi from '../http/module/TypeApi';
 
 // 类型列表
 const dynamicTags = ref(null)
@@ -41,14 +42,13 @@ const inputVisible = ref(false)
 const InputRef = ref()
 // 当点击标签的关闭图标时，从标签列表中删除指定的标签。
 const handleClose = (tag) => {
-    dynamicTags.value.splice(dynamicTags.value.indexOf(tag), 1)
-    axios.delete('szb-api/types/' + tag)
-        .then(response => {
-            console.log(response.data.message);
-        })
-        .catch(error => {
-            console.log(error);
-        });
+    TypeApi.delete(tag).then(response => {
+        dynamicTags.value.splice(dynamicTags.value.indexOf(tag), 1)
+        console.log(response.message);
+    })
+    .catch(error => {
+        console.error(error);
+    });
 }
 // 当点击"添加标签"按钮时，显示输入标签的输入框，并将输入框的焦点设置为输入状态。
 const showInput = () => {
@@ -63,16 +63,14 @@ const handleInputConfirm = () => {
         dynamicTags.value.push(inputValue.value)
     }
 
-    axios.post('szb-api/types/', { type: inputValue.value })
-        .then(response => {
-            console.log(response.data.message);
-        })
-        .catch(error => {
-            console.log(error);
-        });
-
-    inputVisible.value = false
-    inputValue.value = ''
+    TypeApi.create({ type: inputValue.value }).then(response => {
+        console.log(response.message);
+    }).catch(error => {
+        console.log(error);
+    }).finally(() => {
+        inputVisible.value = false
+        inputValue.value = ''
+    });
 }
 
 </script>

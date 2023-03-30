@@ -1,10 +1,7 @@
 <template>
   <div>
-首页
+    首页
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-</script>
+<script setup></script>
