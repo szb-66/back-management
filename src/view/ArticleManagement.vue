@@ -112,8 +112,6 @@
 <script setup>
 import { reactive, ref, nextTick, onMounted, toRef, watch } from 'vue'
 import axios from 'axios';
-import Vue3Tinymce from '@jsdawn/vue3-tinymce';
-import Editor from '@tinymce/tinymce-vue';
 
 const base = ['设计知识库','开发知识库'] //知识库选项
 
