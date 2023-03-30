@@ -19,9 +19,9 @@
 import NavLeft from './components/navLeft.vue';
 import NavTop from './components/navTop.vue';
 import Login from './view/Login.vue';
-import { ref,onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 
-const showLogin = ref(true);
+const showLogin = ref(true); //登录状态，true进入登录页面，false进入主页面
 
 // 在组件挂载时检查登录状态
 onMounted(() => {
@@ -40,7 +40,7 @@ onMounted(() => {
       localStorage.removeItem('loginTimestamp');
     }
   } else {
-    showLogin.value = false;
+    showLogin.value = true;
   }
 });
 
