@@ -265,6 +265,7 @@ function removeImg(file, fileList) {
 const deleteRow = async (row) => {
   try {
     await axios.delete(`szb-api/articles/${row.id}`);
+    axios.delete(row.cover_img_url); // 删除服务器图片
     tableDatas.value.splice(tableDatas.value.indexOf(row), 1);
     // 更新 paginatedTableDatas 以便表格显示正确的内容
     paginateTableDatas();

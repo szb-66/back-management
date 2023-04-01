@@ -19,7 +19,7 @@ export default defineConfig({
     open: true,
     proxy: {
       '/szb-api': {
-        target: 'http://szb.design:3000/api',
+        target: 'https://szb.design:3000/api',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/szb-api/, ''),
       },

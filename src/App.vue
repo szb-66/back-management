@@ -40,7 +40,8 @@ onMounted(() => {
       localStorage.removeItem('loginTimestamp');
     }
   } else {
-    showLogin.value = true;
+    // showLogin.value = true;
+    localStorage.setItem('loginTimestamp', new Date().getTime());
   }
 });
 

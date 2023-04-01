@@ -70,8 +70,6 @@
 import { computed, nextTick, reactive, ref, watchEffect, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import axios from 'axios';
-// 详细地址 https://juejin.cn/post/7012073370023886856
-import Vue3Tinymce from '@jsdawn/vue3-tinymce';
 import Editor from '@tinymce/tinymce-vue';
 // 导出tinymce的插件
 // import 'tinymce/plugins/image';
