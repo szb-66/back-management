@@ -25,11 +25,11 @@ const showLogin = ref(true); //登录状态，true进入登录页面，false进�
 
 // 在组件挂载时检查登录状态
 onMounted(() => {
-  const loginStatus = localStorage.getItem('loginStatus');
-  const loginTimestamp = localStorage.getItem('loginTimestamp');
-
+  const loginStatus = localStorage.getItem('loginStatus');  //登录状态
+  const loginTimestamp = localStorage.getItem('loginTimestamp');  //登录时间
+  
   if (loginStatus && loginTimestamp) {
-    const currentTime = new Date().getTime();
+    const currentTime = new Date().getTime()//当前时间
     const timeDiff = currentTime - loginTimestamp;
 
     // 检查是否在两小时内
@@ -40,16 +40,15 @@ onMounted(() => {
       localStorage.removeItem('loginTimestamp');
     }
   } else {
-    // showLogin.value = true;
-    localStorage.setItem('loginTimestamp', new Date().getTime());
+    showLogin.value = true;
   }
 });
 
 // 登陆成功执行函数
 const handleLoginSuccess = () => {
   showLogin.value = false;
-  localStorage.setItem('loginStatus', 'loggedIn');
-  localStorage.setItem('loginTimestamp', new Date().getTime());
+  localStorage.setItem('loginStatus', 'loggedIn'); //登录状态
+  localStorage.setItem('loginTimestamp', new Date().getTime()); //登录时间
 };
 
 </script>

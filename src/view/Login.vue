@@ -10,7 +10,6 @@
         <img src="src/assets/images/login/trees.png" class="trees">
         <div class="login">
             <h2>登陆</h2>
-            <form class="innner">
                 <div class="inputBox">
                     <input type="text" v-model="username" required placeholder="请输入用户名">
                 </div>
@@ -18,13 +17,12 @@
                     <input type="password" v-model="password" required placeholder="请输入密码">
                 </div>
                 <div class="inputBox">
-                    <input type="submit" value="登陆" id="btn" @click="onSubmit()">
+                    <input type="submit" value="登陆" id="btn"  @click="onSubmit()">
                 </div>
                 <div class="group">
                     <a href="#">忘记密码</a>
                     <a href="#">注册</a>
                 </div>
-            </form>
         </div>
     </section>
 </template>
