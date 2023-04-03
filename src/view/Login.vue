@@ -2,12 +2,12 @@
     <section>
         <div class="leaves">
             <div class="set">
-                <div v-for="i in 8" :key="i"><img :src="`src/assets/images/login/leaf_0${i % 4 + 1}.png`"></div>
+                <div v-for="i in 8" :key="i"><img :src="`/images/login/leaf_0${i % 4 + 1}.png`"></div>
             </div>
         </div>
-        <img src="src/assets/images/login/bg.jpg" class="bg">
-        <img src="src/assets/images/login/girl.png" class="girl">
-        <img src="src/assets/images/login/trees.png" class="trees">
+        <img src="/images/login/bg.jpg" class="bg">
+        <img src="/images/login/girl.png" class="girl">
+        <img src="/images/login/trees.png" class="trees">
         <div class="login">
             <h2>登陆</h2>
                 <div class="inputBox">

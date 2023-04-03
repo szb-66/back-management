@@ -264,7 +264,7 @@ function removeImg(file, fileList) {
 // 删除按钮
 const deleteRow = async (row) => {
   try {
-    await axios.delete(`https://szb.design:3000/api/articles/${row.id}`);
+    await axios.delete(`szb-api/articles/${row.id}`);
     tableDatas.value.splice(tableDatas.value.indexOf(row), 1);
     // 更新 paginatedTableDatas 以便表格显示正确的内容
     paginateTableDatas();

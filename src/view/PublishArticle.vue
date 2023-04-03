@@ -140,10 +140,12 @@ const example_image_upload_handler = (blobInfo, progress) => new Promise((resolv
             }
         });
 });
+
 const tinymceInit = {
     language: 'zh-Hans',
     language_url: 'https://unpkg.com/@jsdawn/vue3-tinymce@2.0.2/dist/tinymce/langs/zh-Hans.js',
     images_upload_handler: example_image_upload_handler,
+    content_style: 'img { width: 100%; height: auto; }',
 };
 
 

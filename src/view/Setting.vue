@@ -1,4 +1,5 @@
 <template>
+    <!-- 文章类型管理 -->
     <div class="types">
         <span>文章类型：</span>
         <!-- 标签 -->
@@ -12,6 +13,11 @@
             + New Tag
         </el-button>
     </div>
+    <!-- 类型权重管理 -->
+    <el-table :data="tableData" style="width: 100%">
+        <el-table-column prop="type" label="类型" width="180" />
+        <el-table-column prop="weight" label="权重" width="180" />
+    </el-table>
 </template>
   
 <script setup>
@@ -19,20 +25,32 @@ import { nextTick, ref, onMounted } from 'vue'
 import { ElInput } from 'element-plus'
 import axios from 'axios';
 
-// 类型列表
-const dynamicTags = ref(null)
+
+const dynamicTags = ref(null) // 类型列表
+const tableData = ref(null) // 类型权重列表
 
 // 获取类型列表
 onMounted(() => {
     fetchArticles(dynamicTags);
+    getTypeByWeight(tableData);
 });
+
 // 沟通服务器获取数据,并将数据赋值给form
-async function fetchArticles(form) {
+async function fetchArticles(dynamicTags) {
     try {
         const response = await axios.get('szb-api/types');
-        form.value = response.data.map(tag => tag.type);
+        dynamicTags.value = response.data.map(tag => tag.type);
     } catch (error) {
         console.error('获取文章列表失败：', error);
+    }
+}
+
+async function getTypeByWeight(tableData) {
+    try {
+        const response = await axios.get('szb-api/types/byWeight');
+        tableData.value = response.data
+    } catch (error) {
+        console.error('按权重获取文章列表失败：', error);
     }
 }
 
