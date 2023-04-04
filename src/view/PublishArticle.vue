@@ -1,15 +1,14 @@
 <template>
     <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules" label-width="120px" class="demo-ruleForm" :size="formSize"
         status-icon label-position="top">
-
         <!-- 标题 -->
         <el-form-item label="文章标题" prop="title">
             <el-input v-model="ruleForm.title" />
         </el-form-item>
         <!-- 封面 -->
         <el-form-item label="封面" prop="cover_img_url">
-            <el-upload ref="uploadRef" class="upload-demo" action="szb-api/images" :limit="1"
-                list-type="picture-card" :on-exceed="handleExceed" :before-upload="beforeUpload" :on-success="handleSuccess"
+            <el-upload ref="uploadRef" class="upload-demo" action="szb-api/images" :limit="1" list-type="picture-card"
+                :on-exceed="handleExceed" :before-upload="beforeUpload" :on-success="handleSuccess"
                 :file-list="uploadedFiles" :on-remove="removeImg">
                 <!-- <el-button type="primary">select file</el-button> -->
                 <template #tip>
@@ -54,7 +53,7 @@
         <!-- 内容 -->
         <el-form-item label="内容" prop="content" label-width="auto" class="custom-form-item222">
             <Editor id="content" :init="tinymceInit" v-model="ruleForm.content"
-                api-key="8dhhq3d47uy2o92tjh5anq5m1c7vm7dixz6t6r9fhht67bpd" ></Editor>
+                api-key="8dhhq3d47uy2o92tjh5anq5m1c7vm7dixz6t6r9fhht67bpd"></Editor>
         </el-form-item>
         <!-- <vue3-tinymce :setting="tinymceInit"/> -->
 
@@ -109,7 +108,7 @@ let ruleForm = reactive({
     knowledge_base: '未分类',
 })
 
-const base = ['设计知识库','开发知识库']
+const base = ['设计知识库', '开发知识库']
 
 
 // 设置富文本编辑器

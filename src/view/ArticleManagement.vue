@@ -46,7 +46,7 @@
     </div>
 
     <!-- 对话框弹窗 -->
-    <el-dialog v-model="dialogVisible" title="编辑文章" :append-to-body="true" :show-close="false">
+    <el-dialog v-model="dialogVisible" title="编辑文章" :show-close="false">
       <el-form :model="data">
         <!-- 文章标题 -->
         <el-form-item label="标题">
@@ -54,9 +54,9 @@
         </el-form-item>
         <!-- 封面 -->
         <el-form-item label="封面">
-          <el-upload ref="uploadRef" class="upload-demo" action="szb-api/images" :limit="1"
-            list-type="picture-card" :on-exceed="handleExceed" :before-upload="beforeUpload" :on-success="handleSuccess"
-            :file-list="uploadedFiles" :on-remove="removeImg">
+          <el-upload ref="uploadRef" class="upload-demo" action="szb-api/images" :limit="1" list-type="picture-card"
+            :on-exceed="handleExceed" :before-upload="beforeUpload" :on-success="handleSuccess" :file-list="uploadedFiles"
+            :on-remove="removeImg">
             <template #tip>
               <div class="el-upload__tip">jpg/png files with a size less than 500KB.</div>
             </template>
@@ -94,7 +94,7 @@
         <!-- 内容 -->
         <el-form-item label="内容" class="custom-form-item222">
           <Editor id="content" :init="tinymceInit" v-model="data.content"
-            api-key="8dhhq3d47uy2o92tjh5anq5m1c7vm7dixz6t6r9fhht67bpd"></Editor>
+            api-key="8dhhq3d47uy2o92tjh5anq5m1c7vm7dixz6t6r9fhht67bpd" class="editor"></Editor>
         </el-form-item>
 
       </el-form>
@@ -113,7 +113,7 @@
 import { reactive, ref, nextTick, onMounted, toRef, watch } from 'vue'
 import axios from 'axios';
 import Editor from '@tinymce/tinymce-vue';
-const base = ['设计知识库','开发知识库'] //知识库选项
+const base = ['设计知识库', '开发知识库'] //知识库选项
 
 // 分页后的数据
 const paginatedTableDatas = ref([])
@@ -221,6 +221,7 @@ const tinymceInit = {
   language: 'zh-Hans',
   language_url: 'https://unpkg.com/@jsdawn/vue3-tinymce@2.0.2/dist/tinymce/langs/zh-Hans.js',
   images_upload_handler: example_image_upload_handler,
+  content_style: 'img { width: 100%; height: auto; }',
 };
 
 // 封面
@@ -288,7 +289,7 @@ const data = reactive({
   created_at: '',
   updated_at: '',
   cover_img_url: '',
-  knowledge_base:'',
+  knowledge_base: '',
 })
 
 // 点击的对话框id
@@ -398,4 +399,11 @@ const handleInputConfirm = () => {
   // 强制添加属性
   display: block !important;
 }
+
+</style>
+
+<style>
+/* 在el-dialog中tinymce z-index 被太小而被遮挡时要加这两句 */
+.tox-tinymce-aux{z-index:99999 !important;}
+.tinymce.ui.FloatPanel{z-Index: 99;}
 </style>
