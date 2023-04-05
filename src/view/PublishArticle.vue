@@ -1,6 +1,7 @@
 <template>
     <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules" label-width="120px" class="demo-ruleForm" :size="formSize"
         status-icon label-position="top">
+
         <!-- 标题 -->
         <el-form-item label="文章标题" prop="title">
             <el-input v-model="ruleForm.title" />
@@ -111,7 +112,6 @@ let ruleForm = reactive({
 const base = ['设计知识库', '开发知识库']
 
 
-// 设置富文本编辑器
 const example_image_upload_handler = (blobInfo, progress) => new Promise((resolve, reject) => {
     const formData = new FormData();
     formData.append('file', blobInfo.blob(), blobInfo.filename());
@@ -140,12 +140,27 @@ const example_image_upload_handler = (blobInfo, progress) => new Promise((resolv
         });
 });
 
-const tinymceInit = {
-    language: 'zh-Hans',
-    language_url: 'https://unpkg.com/@jsdawn/vue3-tinymce@2.0.2/dist/tinymce/langs/zh-Hans.js',
-    images_upload_handler: example_image_upload_handler,
-    content_style: 'img { width: 100%; height: auto; }',
+  // 设置富文本编辑器
+  const tinymceInit = {
+  language: 'zh-Hans',
+  language_url: 'https://unpkg.com/@jsdawn/vue3-tinymce@2.0.2/dist/tinymce/langs/zh-Hans.js',
+  images_upload_handler: example_image_upload_handler,
+  content_style: 'img { width: 100%; height: auto; }',
+  plugins: ['media', 'codesample', 'code', 'fullscreen',  'advlist', 'anchor', 'autolink', 'help',
+    'image',  'tinydrive', 'lists', 'link',  'preview',
+    'searchreplace', 'table', 'template',  'visualblocks', 'wordcount'],
+  toolbar: 'undo redo | blocks | ' +
+    'bold italic forecolor backcolor | alignleft aligncenter ' +
+    'alignright alignjustify | bullist numlist outdent indent | ' +
+    'media | codesample | code | fullscreen',
+  codesample_languages: [
+    { text: 'HTML/XML', value: 'markup' },
+    { text: 'JavaScript', value: 'javascript' },
+    { text: 'CSS', value: 'css' },
+    { text: 'Python', value: 'python' },
+  ],
 };
+
 
 
 

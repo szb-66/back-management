@@ -189,39 +189,52 @@ async function fetchArticles() {
   }
 }
 
-// 设置富文本编辑器
 const example_image_upload_handler = (blobInfo, progress) => new Promise((resolve, reject) => {
   const formData = new FormData();
   formData.append('file', blobInfo.blob(), blobInfo.filename());
-
+  
   axios.post('szb-api/images', formData, {
     withCredentials: false,
     onUploadProgress: (e) => {
       progress(e.loaded / e.total * 100);
     }
   })
-    .then(response => {
-      const json = response.data.url;
-
-      if (!json || typeof json != 'string') {
-        reject('Invalid JSON: ' + JSON.stringify(json));
-        return;
-      }
-      resolve(json);
-    })
-    .catch(error => {
+  .then(response => {
+    const json = response.data.url;
+    
+    if (!json || typeof json != 'string') {
+      reject('Invalid JSON: ' + JSON.stringify(json));
+      return;
+    }
+    resolve(json);
+  })
+  .catch(error => {
       if (error.response && error.response.status === 403) {
         reject({ message: 'HTTP Error: ' + error.response.status, remove: true });
       } else {
         reject('HTTP Error: ' + error.message);
       }
     });
-});
+  });
+  // 设置富文本编辑器
 const tinymceInit = {
   language: 'zh-Hans',
   language_url: 'https://unpkg.com/@jsdawn/vue3-tinymce@2.0.2/dist/tinymce/langs/zh-Hans.js',
   images_upload_handler: example_image_upload_handler,
   content_style: 'img { width: 100%; height: auto; }',
+  plugins: ['media', 'codesample', 'code', 'fullscreen',  'advlist', 'anchor', 'autolink', 'help',
+    'image',  'tinydrive', 'lists', 'link',  'preview',
+    'searchreplace', 'table', 'template',  'visualblocks', 'wordcount'],
+  toolbar: 'undo redo | blocks | ' +
+    'bold italic forecolor backcolor | alignleft aligncenter ' +
+    'alignright alignjustify | bullist numlist outdent indent | ' +
+    'media | codesample | code | fullscreen',
+  codesample_languages: [
+    { text: 'HTML/XML', value: 'markup' },
+    { text: 'JavaScript', value: 'javascript' },
+    { text: 'CSS', value: 'css' },
+    { text: 'Python', value: 'python' },
+  ],
 };
 
 // 封面
@@ -399,11 +412,15 @@ const handleInputConfirm = () => {
   // 强制添加属性
   display: block !important;
 }
-
 </style>
 
 <style>
 /* 在el-dialog中tinymce z-index 被太小而被遮挡时要加这两句 */
-.tox-tinymce-aux{z-index:99999 !important;}
-.tinymce.ui.FloatPanel{z-Index: 99;}
+.tox-tinymce-aux {
+  z-index: 99999 !important;
+}
+
+.tinymce.ui.FloatPanel {
+  z-Index: 99;
+}
 </style>
